@@ -17,8 +17,8 @@ import {
   createConversation,
   saveMedia,
   getMedia,
-  deleteMedia,
-  getMediaBucket
+  getMediaBucket,
+  deleteMedia
 } from "./database.js"
 
 dotenv.config()
@@ -27,12 +27,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const PORT = process.env.PORT || 3500
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET || "secret"
 
 const app = express()
 
 app.use(express.json({ limit: "10mb" }))
-app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, "public")))
 
 const expressServer = app.listen(PORT, "0.0.0.0", () => {
@@ -41,7 +40,8 @@ const expressServer = app.listen(PORT, "0.0.0.0", () => {
 
 const io = new Server(expressServer, {
   cors: {
-    origin: "*"
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE"]
   }
 })
 
@@ -52,15 +52,14 @@ const upload = multer({
   }
 })
 
-const onlineUsers = new Map()
-
 await connectDB()
 
 function createToken(user) {
   return jwt.sign(
     {
-      userId: user._id.toString(),
-      username: user.username
+      id: user._id.toString(),
+      username: user.username,
+      email: user.email
     },
     JWT_SECRET,
     {
@@ -70,17 +69,15 @@ function createToken(user) {
 }
 
 function getTokenFromRequest(req) {
-  const authorization = req.headers.authorization
+  const auth = req.headers.authorization
 
-  if (!authorization) {
-    return null
-  }
+  if (!auth) return null
 
-  if (!authorization.startsWith("Bearer ")) {
-    return null
-  }
+  const parts = auth.split(" ")
 
-  return authorization.split(" ")[1]
+  if (parts.length !== 2) return null
+
+  return parts[1]
 }
 
 async function authenticate(req, res, next) {
@@ -95,7 +92,7 @@ async function authenticate(req, res, next) {
 
     const decoded = jwt.verify(token, JWT_SECRET)
 
-    const user = await User.findById(decoded.userId)
+    const user = await User.findById(decoded.id)
 
     if (!user) {
       return res.status(401).json({
@@ -104,6 +101,7 @@ async function authenticate(req, res, next) {
     }
 
     req.user = user
+
     next()
   } catch (error) {
     return res.status(401).json({
@@ -114,47 +112,47 @@ async function authenticate(req, res, next) {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const username = req.body.username?.trim()
-    const email = req.body.email?.trim().toLowerCase()
-    const password = req.body.password
+    const { username, email, password } = req.body
 
     if (!username || !email || !password) {
       return res.status(400).json({
-        message: "All fields are required"
-      })
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        message: "Password must contain at least 6 characters"
+        message: "Username, email and password are required"
       })
     }
 
     const existingUser = await User.findOne({
       $or: [
         { username },
-        { email }
+        { email: email.toLowerCase() }
       ]
     })
 
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         message: "Username or email already exists"
       })
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await User.create({
       username,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword
     })
 
+    const token = createToken(user)
+
     res.status(201).json({
       message: "Registration successful",
-      userId: user._id.toString(),
-      username: user.username
+      token,
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        about: user.about,
+        profilePicture: user.profilePicture
+      }
     })
   } catch (error) {
     console.log(error)
@@ -167,8 +165,7 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   try {
-    const email = req.body.email?.trim().toLowerCase()
-    const password = req.body.password
+    const { email, password } = req.body
 
     if (!email || !password) {
       return res.status(400).json({
@@ -176,7 +173,9 @@ app.post("/api/login", async (req, res) => {
       })
     }
 
-    const user = await User.findOne({ email })
+    const user = await User.findOne({
+      email: email.toLowerCase()
+    })
 
     if (!user) {
       return res.status(401).json({
@@ -200,8 +199,13 @@ app.post("/api/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      userId: user._id.toString(),
-      username: user.username
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        about: user.about,
+        profilePicture: user.profilePicture
+      }
     })
   } catch (error) {
     console.log(error)
@@ -215,11 +219,11 @@ app.post("/api/login", async (req, res) => {
 app.get("/api/me", authenticate, async (req, res) => {
   res.json({
     user: {
-      id: req.user._id,
+      id: req.user._id.toString(),
       username: req.user.username,
       email: req.user.email,
-      profilePicture: req.user.profilePicture,
       about: req.user.about,
+      profilePicture: req.user.profilePicture,
       online: req.user.online,
       lastSeen: req.user.lastSeen
     }
@@ -231,21 +235,31 @@ app.get("/api/users", authenticate, async (req, res) => {
     const search = req.query.search || ""
 
     const users = await User.find({
-      _id: {
-        $ne: req.user._id
-      },
-      username: {
-        $regex: search,
-        $options: "i"
-      }
+      _id: { $ne: req.user._id },
+      $or: [
+        {
+          username: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+        {
+          email: {
+            $regex: search,
+            $options: "i"
+          }
+        }
+      ]
     })
-      .select("username profilePicture about online lastSeen")
-      .limit(30)
+      .select("-password")
+      .limit(50)
 
     res.json(users)
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
-      message: "Could not fetch users"
+      message: "Unable to load users"
     })
   }
 })
@@ -253,7 +267,7 @@ app.get("/api/users", authenticate, async (req, res) => {
 app.get("/api/users/:id", authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .select("username email profilePicture about online lastSeen")
+      .select("-password")
 
     if (!user) {
       return res.status(404).json({
@@ -263,18 +277,28 @@ app.get("/api/users/:id", authenticate, async (req, res) => {
 
     res.json(user)
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
-      message: "Could not fetch user"
+      message: "Unable to load user"
     })
   }
 })
 
 app.patch("/api/profile", authenticate, async (req, res) => {
   try {
-    const { about } = req.body
+    const { username, about, profilePicture } = req.body
 
-    if (typeof about === "string") {
-      req.user.about = about.slice(0, 200)
+    if (username !== undefined) {
+      req.user.username = username
+    }
+
+    if (about !== undefined) {
+      req.user.about = about
+    }
+
+    if (profilePicture !== undefined) {
+      req.user.profilePicture = profilePicture
     }
 
     await req.user.save()
@@ -282,12 +306,16 @@ app.patch("/api/profile", authenticate, async (req, res) => {
     res.json({
       message: "Profile updated",
       user: {
+        id: req.user._id.toString(),
         username: req.user.username,
+        email: req.user.email,
         about: req.user.about,
         profilePicture: req.user.profilePicture
       }
     })
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
       message: "Profile update failed"
     })
@@ -299,7 +327,7 @@ app.get("/api/conversations", authenticate, async (req, res) => {
     const conversations = await Conversation.find({
       participants: req.user._id
     })
-      .populate("participants", "username profilePicture online lastSeen about")
+      .populate("participants", "-password")
       .populate("lastMessage")
       .sort({
         updatedAt: -1
@@ -307,57 +335,47 @@ app.get("/api/conversations", authenticate, async (req, res) => {
 
     res.json(conversations)
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
-      message: "Could not fetch conversations"
+      message: "Unable to load conversations"
     })
   }
 })
 
-app.post("/api/conversations/:userId", authenticate, async (req, res) => {
-  try {
-    if (req.params.userId === req.user._id.toString()) {
-      return res.status(400).json({
-        message: "You cannot chat with yourself"
+app.post(
+  "/api/conversations/:userId",
+  authenticate,
+  async (req, res) => {
+    try {
+      const otherUser = await User.findById(req.params.userId)
+
+      if (!otherUser) {
+        return res.status(404).json({
+          message: "User not found"
+        })
+      }
+
+      const conversation = await createConversation(
+        req.user._id,
+        otherUser._id
+      )
+
+      await conversation.populate(
+        "participants",
+        "-password"
+      )
+
+      res.json(conversation)
+    } catch (error) {
+      console.log(error)
+
+      res.status(500).json({
+        message: "Unable to create conversation"
       })
     }
-
-    const otherUser = await User.findById(req.params.userId)
-
-    if (!otherUser) {
-      return res.status(404).json({
-        message: "User not found"
-      })
-    }
-
-    const blocked = req.user.blockedUsers.some(
-      id => id.toString() === otherUser._id.toString()
-    )
-
-    if (blocked) {
-      return res.status(403).json({
-        message: "User is blocked"
-      })
-    }
-
-    const conversation = await createConversation(
-      req.user._id,
-      otherUser._id
-    )
-
-    const populated = await Conversation.findById(
-      conversation._id
-    ).populate(
-      "participants",
-      "username profilePicture online lastSeen about"
-    )
-
-    res.json(populated)
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not create conversation"
-    })
   }
-})
+)
 
 app.get(
   "/api/messages/:conversationId",
@@ -376,7 +394,7 @@ app.get(
       }
 
       const messages = await Message.find({
-        conversationId: conversation._id
+        conversationId: req.params.conversationId
       })
         .populate("sender", "username profilePicture")
         .populate("receiver", "username profilePicture")
@@ -384,25 +402,13 @@ app.get(
         .sort({
           createdAt: 1
         })
-        .limit(500)
-
-      await Message.updateMany(
-        {
-          conversationId: conversation._id,
-          receiver: req.user._id,
-          read: false
-        },
-        {
-          $set: {
-            read: true
-          }
-        }
-      )
 
       res.json(messages)
     } catch (error) {
+      console.log(error)
+
       res.status(500).json({
-        message: "Could not fetch messages"
+        message: "Unable to load messages"
       })
     }
   }
@@ -425,27 +431,16 @@ app.post(
         req.file.originalname,
         req.file.mimetype,
         {
-          userId: req.user._id.toString()
+          uploadedBy: req.user._id.toString()
         }
       )
 
-      let type = "document"
-
-      if (req.file.mimetype.startsWith("image/")) {
-        type = "image"
-      } else if (req.file.mimetype.startsWith("video/")) {
-        type = "video"
-      } else if (req.file.mimetype.startsWith("audio/")) {
-        type = "audio"
-      }
-
-      res.status(201).json({
+      res.json({
+        message: "File uploaded",
         mediaId,
-        type,
         name: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        url: `/api/media/${mediaId}`
+        type: req.file.mimetype,
+        size: req.file.size
       })
     } catch (error) {
       console.log(error)
@@ -462,137 +457,164 @@ app.get("/api/media/:id", async (req, res) => {
     const file = await getMedia(req.params.id)
 
     if (!file) {
-      return res.status(404).send("File not found")
+      return res.status(404).json({
+        message: "File not found"
+      })
     }
 
-    res.set(
+    res.setHeader(
       "Content-Type",
       file.contentType || "application/octet-stream"
     )
 
-    res.set(
-      "Content-Disposition",
-      `inline; filename="${file.filename}"`
-    )
+    const bucket = getMediaBucket()
 
-    const downloadStream = getMediaBucket().openDownloadStream(
-      file._id
-    )
+    const stream = bucket.openDownloadStream(file._id)
 
-    downloadStream.on("error", () => {
+    stream.on("error", () => {
       res.status(404).end()
     })
 
-    downloadStream.pipe(res)
+    stream.pipe(res)
   } catch (error) {
-    res.status(404).send("File not found")
-  }
-})
+    console.log(error)
 
-app.delete("/api/media/:id", authenticate, async (req, res) => {
-  try {
-    await deleteMedia(req.params.id)
-
-    res.json({
-      message: "Media deleted"
-    })
-  } catch (error) {
     res.status(500).json({
-      message: "Could not delete media"
+      message: "Unable to load media"
     })
   }
 })
 
-app.post("/api/block/:userId", authenticate, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId)
+app.delete(
+  "/api/media/:id",
+  authenticate,
+  async (req, res) => {
+    try {
+      await deleteMedia(req.params.id)
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found"
+      res.json({
+        message: "Media deleted"
+      })
+    } catch (error) {
+      console.log(error)
+
+      res.status(500).json({
+        message: "Unable to delete media"
       })
     }
+  }
+)
 
-    if (
-      !req.user.blockedUsers.some(
+app.post(
+  "/api/block/:userId",
+  authenticate,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId)
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found"
+        })
+      }
+
+      const alreadyBlocked = req.user.blockedUsers.some(
         id => id.toString() === user._id.toString()
       )
-    ) {
-      req.user.blockedUsers.push(user._id)
+
+      if (!alreadyBlocked) {
+        req.user.blockedUsers.push(user._id)
+        await req.user.save()
+      }
+
+      res.json({
+        message: "User blocked"
+      })
+    } catch (error) {
+      console.log(error)
+
+      res.status(500).json({
+        message: "Unable to block user"
+      })
+    }
+  }
+)
+
+app.delete(
+  "/api/block/:userId",
+  authenticate,
+  async (req, res) => {
+    try {
+      req.user.blockedUsers =
+        req.user.blockedUsers.filter(
+          id => id.toString() !== req.params.userId
+        )
+
       await req.user.save()
-    }
 
-    res.json({
-      message: "User blocked"
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not block user"
-    })
-  }
-})
+      res.json({
+        message: "User unblocked"
+      })
+    } catch (error) {
+      console.log(error)
 
-app.delete("/api/block/:userId", authenticate, async (req, res) => {
-  try {
-    req.user.blockedUsers = req.user.blockedUsers.filter(
-      id => id.toString() !== req.params.userId
-    )
-
-    await req.user.save()
-
-    res.json({
-      message: "User unblocked"
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not unblock user"
-    })
-  }
-})
-
-app.post("/api/contacts/:userId", authenticate, async (req, res) => {
-  try {
-    if (req.params.userId === req.user._id.toString()) {
-      return res.status(400).json({
-        message: "Invalid contact"
+      res.status(500).json({
+        message: "Unable to unblock user"
       })
     }
+  }
+)
 
-    const existing = await Contact.findOne({
-      owner: req.user._id,
-      contact: req.params.userId
-    })
+app.post(
+  "/api/contacts/:userId",
+  authenticate,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId)
 
-    if (!existing) {
-      await Contact.create({
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found"
+        })
+      }
+
+      const existingContact = await Contact.findOne({
         owner: req.user._id,
-        contact: req.params.userId
+        contact: user._id
+      })
+
+      if (!existingContact) {
+        await Contact.create({
+          owner: req.user._id,
+          contact: user._id
+        })
+      }
+
+      res.json({
+        message: "Contact added"
+      })
+    } catch (error) {
+      console.log(error)
+
+      res.status(500).json({
+        message: "Unable to add contact"
       })
     }
-
-    res.json({
-      message: "Contact added"
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not add contact"
-    })
   }
-})
+)
 
 app.get("/api/contacts", authenticate, async (req, res) => {
   try {
     const contacts = await Contact.find({
       owner: req.user._id
-    }).populate(
-      "contact",
-      "username profilePicture about online lastSeen"
-    )
+    }).populate("contact", "-password")
 
     res.json(contacts)
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
-      message: "Could not fetch contacts"
+      message: "Unable to load contacts"
     })
   }
 })
@@ -610,19 +632,22 @@ app.get("/api/calls", authenticate, async (req, res) => {
       .sort({
         createdAt: -1
       })
-      .limit(100)
 
     res.json(calls)
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({
-      message: "Could not fetch calls"
+      message: "Unable to load calls"
     })
   }
 })
 
+const onlineUsers = new Map()
+
 io.use(async (socket, next) => {
   try {
-    const token = socket.handshake.auth?.token
+    const token = socket.handshake.auth.token
 
     if (!token) {
       return next(new Error("Authentication required"))
@@ -630,7 +655,7 @@ io.use(async (socket, next) => {
 
     const decoded = jwt.verify(token, JWT_SECRET)
 
-    const user = await User.findById(decoded.userId)
+    const user = await User.findById(decoded.id)
 
     if (!user) {
       return next(new Error("User not found"))
@@ -640,35 +665,37 @@ io.use(async (socket, next) => {
 
     next()
   } catch (error) {
-    next(new Error("Invalid token"))
+    next(new Error("Invalid authentication"))
   }
 })
 
 io.on("connection", async socket => {
   const user = socket.user
 
-  onlineUsers.set(user._id.toString(), {
+  const userId = user._id.toString()
+
+  onlineUsers.set(userId, {
     socketId: socket.id,
     username: user.username
   })
 
-  user.online = true
-  user.lastSeen = new Date()
-  await user.save()
+  socket.join(userId)
 
-  socket.join(user._id.toString())
+  await User.findByIdAndUpdate(user._id, {
+    online: true
+  })
 
   io.emit("userStatus", {
-    userId: user._id.toString(),
+    userId,
     online: true,
-    lastSeen: user.lastSeen
+    username: user.username
   })
 
   socket.on("privateMessage", async data => {
     try {
       const {
         receiverId,
-        text,
+        text = "",
         type = "text",
         mediaId = "",
         mediaName = "",
@@ -678,30 +705,32 @@ io.on("connection", async socket => {
       } = data
 
       if (!receiverId) {
-        return
-      }
-
-      if (!text && !mediaId) {
+        socket.emit("messageError", {
+          message: "Receiver is required"
+        })
         return
       }
 
       const receiver = await User.findById(receiverId)
 
       if (!receiver) {
+        socket.emit("messageError", {
+          message: "Receiver not found"
+        })
         return
       }
 
-      const blockedByMe = user.blockedUsers.some(
+      const blockedByReceiver = receiver.blockedUsers.some(
+        id => id.toString() === userId
+      )
+
+      const blockedBySender = user.blockedUsers.some(
         id => id.toString() === receiverId
       )
 
-      const blockedMe = receiver.blockedUsers.some(
-        id => id.toString() === user._id.toString()
-      )
-
-      if (blockedByMe || blockedMe) {
+      if (blockedByReceiver || blockedBySender) {
         socket.emit("messageError", {
-          message: "You cannot message this user"
+          message: "Message cannot be sent"
         })
         return
       }
@@ -726,6 +755,7 @@ io.on("connection", async socket => {
 
       conversation.lastMessage = message._id
       conversation.updatedAt = new Date()
+
       await conversation.save()
 
       const populatedMessage = await Message.findById(
@@ -735,12 +765,15 @@ io.on("connection", async socket => {
         .populate("receiver", "username profilePicture")
         .populate("replyTo")
 
-      io.to(receiver._id.toString()).emit(
+      io.to(receiverId).emit(
         "privateMessage",
         populatedMessage
       )
 
-      socket.emit("privateMessage", populatedMessage)
+      socket.emit(
+        "privateMessage",
+        populatedMessage
+      )
     } catch (error) {
       console.log(error)
 
@@ -751,12 +784,10 @@ io.on("connection", async socket => {
   })
 
   socket.on("typing", data => {
-    if (!data.receiverId) {
-      return
-    }
+    if (!data.to) return
 
-    io.to(data.receiverId).emit("typing", {
-      userId: user._id.toString(),
+    io.to(data.to).emit("typing", {
+      from: userId,
       username: user.username,
       typing: data.typing
     })
@@ -764,25 +795,19 @@ io.on("connection", async socket => {
 
   socket.on("messageRead", async data => {
     try {
-      if (!data.messageId) {
-        return
-      }
+      if (!data.messageId) return
 
-      const message = await Message.findById(data.messageId)
+      const message = await Message.findByIdAndUpdate(
+        data.messageId,
+        {
+          read: true
+        },
+        {
+          new: true
+        }
+      )
 
-      if (!message) {
-        return
-      }
-
-      if (
-        message.receiver.toString() !==
-        user._id.toString()
-      ) {
-        return
-      }
-
-      message.read = true
-      await message.save()
+      if (!message) return
 
       io.to(message.sender.toString()).emit(
         "messageRead",
@@ -797,18 +822,12 @@ io.on("connection", async socket => {
 
   socket.on("editMessage", async data => {
     try {
-      const message = await Message.findById(data.messageId)
+      const message = await Message.findOne({
+        _id: data.messageId,
+        sender: user._id
+      })
 
-      if (!message) {
-        return
-      }
-
-      if (
-        message.sender.toString() !==
-        user._id.toString()
-      ) {
-        return
-      }
+      if (!message) return
 
       message.text = data.text
       message.edited = true
@@ -816,20 +835,19 @@ io.on("connection", async socket => {
 
       await message.save()
 
-      const populated = await Message.findById(message._id)
-        .populate("sender", "username profilePicture")
-        .populate("receiver", "username profilePicture")
-        .populate("replyTo")
+      const receiverId = message.receiver.toString()
 
-      io.to(message.sender.toString()).emit(
-        "messageEdited",
-        populated
-      )
+      io.to(receiverId).emit("messageEdited", {
+        messageId: message._id.toString(),
+        text: message.text,
+        edited: true
+      })
 
-      io.to(message.receiver.toString()).emit(
-        "messageEdited",
-        populated
-      )
+      socket.emit("messageEdited", {
+        messageId: message._id.toString(),
+        text: message.text,
+        edited: true
+      })
     } catch (error) {
       console.log(error)
     }
@@ -837,38 +855,28 @@ io.on("connection", async socket => {
 
   socket.on("deleteMessage", async data => {
     try {
-      const message = await Message.findById(data.messageId)
+      const message = await Message.findOne({
+        _id: data.messageId,
+        sender: user._id
+      })
 
-      if (!message) {
-        return
-      }
+      if (!message) return
 
-      if (
-        message.sender.toString() !==
-        user._id.toString()
-      ) {
-        return
-      }
-
-      message.text = ""
       message.deleted = true
+      message.text = "This message was deleted"
       message.updatedAt = new Date()
 
       await message.save()
 
-      io.to(message.sender.toString()).emit(
-        "messageDeleted",
-        {
-          messageId: message._id.toString()
-        }
-      )
+      const receiverId = message.receiver.toString()
 
-      io.to(message.receiver.toString()).emit(
-        "messageDeleted",
-        {
-          messageId: message._id.toString()
-        }
-      )
+      io.to(receiverId).emit("messageDeleted", {
+        messageId: message._id.toString()
+      })
+
+      socket.emit("messageDeleted", {
+        messageId: message._id.toString()
+      })
     } catch (error) {
       console.log(error)
     }
@@ -876,19 +884,20 @@ io.on("connection", async socket => {
 
   socket.on("reaction", async data => {
     try {
-      const message = await Message.findById(data.messageId)
-
-      if (!message) {
-        return
-      }
-
-      const existing = message.reactions.find(
-        reaction =>
-          reaction.user.toString() === user._id.toString()
+      const message = await Message.findById(
+        data.messageId
       )
 
-      if (existing) {
-        existing.reaction = data.reaction
+      if (!message) return
+
+      const existingReaction =
+        message.reactions.find(
+          reaction =>
+            reaction.user.toString() === userId
+        )
+
+      if (existingReaction) {
+        existingReaction.reaction = data.reaction
       } else {
         message.reactions.push({
           user: user._id,
@@ -898,20 +907,21 @@ io.on("connection", async socket => {
 
       await message.save()
 
-      io.to(message.sender.toString()).emit(
+      const receiverId = message.receiver.toString()
+
+      const payload = {
+        messageId: message._id.toString(),
+        reactions: message.reactions
+      }
+
+      io.to(receiverId).emit(
         "reactionUpdated",
-        {
-          messageId: message._id.toString(),
-          reactions: message.reactions
-        }
+        payload
       )
 
-      io.to(message.receiver.toString()).emit(
+      socket.emit(
         "reactionUpdated",
-        {
-          messageId: message._id.toString(),
-          reactions: message.reactions
-        }
+        payload
       )
     } catch (error) {
       console.log(error)
@@ -920,52 +930,90 @@ io.on("connection", async socket => {
 
   socket.on("callUser", async data => {
     try {
-      const target = onlineUsers.get(data.to)
+      const {
+        to,
+        type,
+        offer
+      } = data
 
-      if (!target) {
+      if (!to || !type || !offer) {
+        socket.emit("callUnavailable")
+        return
+      }
+
+      const receiver = await User.findById(to)
+
+      if (!receiver) {
+        socket.emit("callUnavailable")
+        return
+      }
+
+      const blockedByReceiver =
+        receiver.blockedUsers.some(
+          id => id.toString() === userId
+        )
+
+      const blockedByCaller =
+        user.blockedUsers.some(
+          id => id.toString() === to
+        )
+
+      if (blockedByReceiver || blockedByCaller) {
+        socket.emit("callUnavailable")
+        return
+      }
+
+      const targetSocket = onlineUsers.get(to)
+
+      if (!targetSocket) {
         socket.emit("callUnavailable")
         return
       }
 
       const call = await Call.create({
         caller: user._id,
-        receiver: data.to,
-        type: data.type || "video",
+        receiver: receiver._id,
+        type,
         status: "calling"
       })
 
-      io.to(target.socketId).emit("incomingCall", {
+      io.to(to).emit("incomingCall", {
         callId: call._id.toString(),
-        from: user._id.toString(),
+        from: userId,
         username: user.username,
-        type: data.type || "video",
-        offer: data.offer
+        type,
+        offer
       })
     } catch (error) {
       console.log(error)
+
+      socket.emit("callUnavailable")
     }
   })
 
   socket.on("callAccepted", async data => {
     try {
-      if (data.callId) {
-        await Call.findByIdAndUpdate(
-          data.callId,
-          {
-            status: "accepted"
-          }
-        )
-      }
+      const {
+        to,
+        callId,
+        answer
+      } = data
 
-      const target = onlineUsers.get(data.to)
-
-      if (!target) {
+      if (!to || !callId || !answer) {
         return
       }
 
-      io.to(target.socketId).emit("callAccepted", {
-        callId: data.callId,
-        answer: data.answer
+      await Call.findByIdAndUpdate(
+        callId,
+        {
+          status: "accepted"
+        }
+      )
+
+      io.to(to).emit("callAccepted", {
+        callId,
+        from: userId,
+        answer
       })
     } catch (error) {
       console.log(error)
@@ -974,86 +1022,108 @@ io.on("connection", async socket => {
 
   socket.on("callRejected", async data => {
     try {
-      if (data.callId) {
+      const {
+        to,
+        callId
+      } = data
+
+      console.log(
+        `Call rejected by ${user.username}`
+      )
+
+      if (callId) {
         await Call.findByIdAndUpdate(
-          data.callId,
+          callId,
           {
             status: "rejected"
           }
         )
       }
 
-      const target = onlineUsers.get(data.to)
+      if (!to) return
 
-      if (!target) {
-        return
-      }
-
-      io.to(target.socketId).emit("callRejected")
+      io.to(to).emit("callRejected", {
+        callId,
+        from: userId
+      })
     } catch (error) {
       console.log(error)
     }
   })
 
   socket.on("iceCandidate", data => {
-    const target = onlineUsers.get(data.to)
+    try {
+      const {
+        to,
+        candidate
+      } = data
 
-    if (!target) {
-      return
+      if (!to || !candidate) return
+
+      io.to(to).emit("iceCandidate", {
+        from: userId,
+        candidate
+      })
+    } catch (error) {
+      console.log(error)
     }
-
-    io.to(target.socketId).emit("iceCandidate", {
-      candidate: data.candidate
-    })
   })
 
   socket.on("endCall", async data => {
     try {
-      if (data.callId) {
+      const {
+        to,
+        callId
+      } = data
+
+      if (callId) {
         await Call.findByIdAndUpdate(
-          data.callId,
+          callId,
           {
             status: "ended"
           }
         )
       }
 
-      const target = onlineUsers.get(data.to)
+      if (!to) return
 
-      if (!target) {
-        return
-      }
-
-      io.to(target.socketId).emit("endCall")
+      io.to(to).emit("endCall", {
+        callId,
+        from: userId
+      })
     } catch (error) {
       console.log(error)
     }
   })
 
   socket.on("disconnect", async () => {
-    const current = onlineUsers.get(user._id.toString())
+    const currentUser = onlineUsers.get(userId)
 
     if (
-      current &&
-      current.socketId === socket.id
+      currentUser &&
+      currentUser.socketId === socket.id
     ) {
-      onlineUsers.delete(user._id.toString())
+      onlineUsers.delete(userId)
 
-      user.online = false
-      user.lastSeen = new Date()
-
-      await user.save()
+      await User.findByIdAndUpdate(
+        user._id,
+        {
+          online: false,
+          lastSeen: new Date()
+        }
+      )
 
       io.emit("userStatus", {
-        userId: user._id.toString(),
+        userId,
         online: false,
-        lastSeen: user.lastSeen
+        username: user.username,
+        lastSeen: new Date()
       })
     }
   })
 })
 
-app.get("*", (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(
     path.join(__dirname, "public", "index.html")
   )
