@@ -2,84 +2,761 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Chat Application</title>
+    <title>Chat Application</title>
 
-  <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
 
-  <main>
+    <!-- LOGIN PAGE -->
 
-    <section id="login">
+    <section id="loginPage">
 
-      <h1>Join Chat</h1>
+        <h1>Login</h1>
 
-      <input
-        type="text"
-        id="name"
-        placeholder="Enter your name"
-      >
+        <form id="loginForm">
 
-      <input
-        type="text"
-        id="room"
-        placeholder="Enter room"
-      >
+            <input
+                type="email"
+                id="loginEmail"
+                placeholder="Email"
+                required
+            >
 
-      <button id="joinBtn">
-        Join Room
-      </button>
+            <br><br>
+
+            <input
+                type="password"
+                id="loginPassword"
+                placeholder="Password"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+        <p>
+            Don't have an account?
+            <button onclick="showPage('registerPage')">
+                Register
+            </button>
+        </p>
 
     </section>
 
-    <section id="chat" class="hidden">
 
-      <header>
+    <!-- REGISTER PAGE -->
 
-        <h1 id="roomTitle">
-          Chat Room
-        </h1>
+    <section id="registerPage" hidden>
 
-      </header>
+        <h1>Create Account</h1>
 
-      <div id="messages"></div>
+        <form id="registerForm">
 
-      <div id="activity"></div>
+            <input
+                type="text"
+                id="registerUsername"
+                placeholder="Username"
+                required
+            >
 
-      <form id="messageForm">
+            <br><br>
 
-        <input
-          type="text"
-          id="messageInput"
-          placeholder="Type a message..."
-          autocomplete="off"
-        >
+            <input
+                type="email"
+                id="registerEmail"
+                placeholder="Email"
+                required
+            >
 
-        <button type="submit">
-          Send
+            <br><br>
+
+            <input
+                type="password"
+                id="registerPassword"
+                placeholder="Password"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Register
+            </button>
+
+        </form>
+
+        <p>
+            Already have an account?
+            <button onclick="showPage('loginPage')">
+                Login
+            </button>
+        </p>
+
+    </section>
+
+
+    <!-- CHAT PAGE -->
+
+    <section id="chatPage" hidden>
+
+        <h1>Chat Application</h1>
+
+        <p>
+            Logged in as:
+            <strong id="currentUsername"></strong>
+        </p>
+
+        <button onclick="logout()">
+            Logout
         </button>
 
-      </form>
+        <hr>
 
-      <aside>
 
-        <h3>Users</h3>
+        <!-- ONLINE USERS -->
 
-        <ul id="userList"></ul>
+        <h2>Online Users</h2>
 
-      </aside>
+        <div id="usersList"></div>
+
+        <hr>
+
+
+        <!-- MESSAGES -->
+
+        <h2>Messages</h2>
+
+        <div id="messages"></div>
+
+        <br>
+
+
+        <!-- MESSAGE INPUT -->
+
+        <form id="messageForm">
+
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Type a message..."
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">
+                Send
+            </button>
+
+        </form>
+
+        <br>
+
+        <button onclick="openCallPage()">
+            Start Video Call
+        </button>
 
     </section>
 
-  </main>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="app.js"></script>
+    <!-- VIDEO CALL PAGE -->
 
-</body>
+    <section id="callPage" hidden>
 
-</html>
+        <h1>Video Call</h1>
+
+        <p id="callStatus">
+            Ready
+        </p>
+
+
+        <!-- REMOTE VIDEO -->
+
+        <h2>Remote User</h2>
+
+        <video
+            id="remoteVideo"
+            autoplay
+            playsinline
+        ></video>
+
+
+        <!-- LOCAL VIDEO -->
+
+        <h2>My Video</h2>
+
+        <video
+            id="localVideo"
+            autoplay
+            muted
+            playsinline
+        ></video>
+
+        <br><br>
+
+
+        <!-- CALL CONTROLS -->
+
+        <button onclick="startCall()">
+            Start Call
+        </button>
+
+        <button onclick="toggleCamera()">
+            Toggle Camera
+        </button>
+
+        <button onclick="toggleMicrophone()">
+            Toggle Microphone
+        </button>
+
+        <button onclick="endCall()">
+            End Call
+        </button>
+
+        <button onclick="closeCallPage()">
+            Back to Chat
+        </button>
+
+    </section>
+
+
+    <!-- INCOMING CALL -->
+
+    <div id="incomingCall" hidden>
+
+        <h2>Incoming Video Call</h2>
+
+        <p id="callerName"></p>
+
+        <button onclick="acceptCall()">
+            Accept
+        </button>
+
+        <button onclick="rejectCall()">
+            Reject
+        </button>
+
+    </div>
+
+
+    <script>
+
+        /* SOCKET.IO */
+
+        const socket = io();
+
+
+        /* VARIABLES */
+
+        let username = "";
+
+        let currentUserId = "";
+
+        let localStream = null;
+
+        let peerConnection = null;
+
+        let incomingOffer = null;
+
+        let callerId = null;
+
+        let cameraEnabled = true;
+
+        let microphoneEnabled = true;
+
+
+        /* WEBRTC CONFIGURATION */
+
+        const rtcConfiguration = {
+
+            iceServers: [
+
+                {
+                    urls: "stun:stun.l.google.com:19302"
+                }
+
+            ]
+
+        };
+
+
+        /* PAGE NAVIGATION */
+
+        function showPage(pageId) {
+
+            document
+                .querySelectorAll("section")
+                .forEach(page => {
+
+                    page.hidden = true;
+
+                });
+
+            document
+                .getElementById(pageId)
+                .hidden = false;
+
+        }
+
+
+        /* REGISTER */
+
+        document
+            .getElementById("registerForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+
+                const usernameInput =
+                    document.getElementById(
+                        "registerUsername"
+                    ).value;
+
+                const email =
+                    document.getElementById(
+                        "registerEmail"
+                    ).value;
+
+                const password =
+                    document.getElementById(
+                        "registerPassword"
+                    ).value;
+
+
+                try {
+
+                    const response =
+                        await fetch("/api/register", {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                username:
+                                    usernameInput,
+
+                                email:
+                                    email,
+
+                                password:
+                                    password
+
+                            })
+
+                        });
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        alert(data.message);
+
+                        return;
+
+                    }
+
+
+                    alert("Registration successful");
+
+                    document
+                        .getElementById("registerForm")
+                        .reset();
+
+                    showPage("loginPage");
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        "Registration failed"
+                    );
+
+                }
+
+            });
+
+
+        /* LOGIN */
+
+        document
+            .getElementById("loginForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+
+                const email =
+                    document.getElementById(
+                        "loginEmail"
+                    ).value;
+
+                const password =
+                    document.getElementById(
+                        "loginPassword"
+                    ).value;
+
+
+                try {
+
+                    const response =
+                        await fetch("/api/login", {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                email:
+                                    email,
+
+                                password:
+                                    password
+
+                            })
+
+                        });
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        alert(data.message);
+
+                        return;
+
+                    }
+
+
+                    localStorage.setItem(
+                        "token",
+                        data.token
+                    );
+
+
+                    username =
+                        data.username;
+
+
+                    currentUserId =
+                        data.userId;
+
+
+                    document
+                        .getElementById(
+                            "currentUsername"
+                        )
+                        .textContent =
+                        username;
+
+
+                    socket.emit(
+                        "userLogin",
+                        {
+                            username: username
+                        }
+                    );
+
+
+                    document
+                        .getElementById("loginForm")
+                        .reset();
+
+
+                    showPage("chatPage");
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        "Login failed"
+                    );
+
+                }
+
+            });
+
+
+        /* LOGOUT */
+
+        function logout() {
+
+            socket.emit("userLogout");
+
+            localStorage.removeItem("token");
+
+            username = "";
+
+            currentUserId = "";
+
+            closeCall();
+
+            showPage("loginPage");
+
+        }
+
+
+        /* SEND MESSAGE */
+
+        document
+            .getElementById("messageForm")
+            .addEventListener("submit", function(event) {
+
+                event.preventDefault();
+
+
+                const input =
+                    document.getElementById(
+                        "messageInput"
+                    );
+
+
+                const message =
+                    input.value.trim();
+
+
+                if (!message) {
+
+                    return;
+
+                }
+
+
+                socket.emit(
+                    "chatMessage",
+                    {
+
+                        username:
+                            username,
+
+                        message:
+                            message
+
+                    }
+                );
+
+
+                input.value = "";
+
+            });
+
+
+        /* RECEIVE MESSAGE */
+
+        socket.on(
+            "message",
+            function(data) {
+
+                displayMessage(
+                    data.username,
+                    data.message
+                );
+
+            }
+        );
+
+
+        /* DISPLAY MESSAGE */
+
+        function displayMessage(
+            sender,
+            message
+        ) {
+
+            const messages =
+                document.getElementById(
+                    "messages"
+                );
+
+
+            const messageElement =
+                document.createElement(
+                    "p"
+                );
+
+
+            messageElement.textContent =
+                sender + ": " + message;
+
+
+            messages.appendChild(
+                messageElement
+            );
+
+        }
+
+
+        /* ONLINE USERS */
+
+        socket.on(
+            "users",
+            function(users) {
+
+                const usersList =
+                    document.getElementById(
+                        "usersList"
+                    );
+
+
+                usersList.innerHTML = "";
+
+
+                users.forEach(function(user) {
+
+                    const userElement =
+                        document.createElement(
+                            "p"
+                        );
+
+
+                    userElement.textContent =
+                        user.username;
+
+
+                    usersList.appendChild(
+                        userElement
+                    );
+
+                });
+
+            }
+        );
+
+
+        /* OPEN CALL PAGE */
+
+        async function openCallPage() {
+
+            showPage("callPage");
+
+            await startCamera();
+
+        }
+
+
+        /* CLOSE CALL PAGE */
+
+        function closeCallPage() {
+
+            closeCall();
+
+            showPage("chatPage");
+
+        }
+
+
+        /* START CAMERA */
+
+        async function startCamera() {
+
+            try {
+
+                localStream =
+                    await navigator
+                        .mediaDevices
+                        .getUserMedia({
+
+                            video: true,
+
+                            audio: true
+
+                        });
+
+
+                document
+                    .getElementById(
+                        "localVideo"
+                    )
+                    .srcObject =
+                    localStream;
+
+
+                document
+                    .getElementById(
+                        "callStatus"
+                    )
+                    .textContent =
+                    "Camera ready";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Camera and microphone permission required"
+                );
+
+            }
+
+        }
+
+
+        /* CREATE PEER CONNECTION */
+
+        function createPeerConnection() {
+
+            peerConnection =
+                new RTCPeerConnection(
+                    rtcConfiguration
+                );
+
+
+            if (localStream) {
+
+                localStream
+                    .getTracks()
+                    .forEach(function(track) {
+
+                        peerConnection.addTrack(
+                            track,
+                            localStream
+                        );
+
+                    });
+
+            }
+
+
+            /* RECEIVE REMOTE VIDEO */
+
+            peerConnection.ontrack =
+                function(event) {
+
+                    document
+                        .getElementById(
+                            "remoteVideo"
+                        )
+                        .srcObject =
+                        event.streams
+                }
+              }
+                

@@ -1,168 +1,370 @@
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    background: #f4f6f8;
+    color: #222;
 }
 
-main {
-  width: 90%;
-  max-width: 700px;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+button {
+    cursor: pointer;
+    border: none;
 }
 
-/* Join Form */
-
-.form-join {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+input {
+    outline: none;
 }
 
-.form-join input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  outline: none;
-  font-size: 14px;
+
+/* =========================
+   LOGIN & REGISTER
+========================= */
+
+#loginPage,
+#registerPage {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #e9eef5;
 }
 
-.form-join input:focus {
-  border-color: #333;
+#loginPage form,
+#registerPage form {
+    width: 350px;
+    padding: 30px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
 }
 
-.form-join button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
+#loginPage h1,
+#registerPage h1 {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.form-join button:hover {
-  background-color: #555;
+#loginPage input,
+#registerPage input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
 }
 
-/* Chat Display */
-
-.chat-display {
-  height: 350px;
-  overflow-y: auto;
-  list-style: none;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background-color: #fafafa;
+#loginPage form button,
+#registerPage form button {
+    width: 100%;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    font-size: 15px;
 }
 
-.chat-display li {
-  background-color: #e9e9e9;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 5px;
+#loginPage form button:hover,
+#registerPage form button:hover {
+    background: #1d4ed8;
 }
 
-/* User List */
-
-.user-list {
-  padding: 8px;
-  font-size: 14px;
-  color: #555;
+#loginPage p,
+#registerPage p {
+    text-align: center;
+    margin-top: 20px;
 }
 
-/* Room List */
-
-.room-list {
-  padding: 8px;
-  font-size: 14px;
-  color: #555;
+#loginPage p button,
+#registerPage p button {
+    background: none;
+    color: #2563eb;
+    font-weight: bold;
 }
 
-/* Activity */
 
-.activity {
-  padding: 8px;
-  font-size: 13px;
-  color: #888;
-  font-style: italic;
+/* =========================
+   CHAT PAGE
+========================= */
+
+#chatPage {
+    height: 100vh;
 }
 
-/* Message Form */
-
-.form-msg {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+#chatPage > h1 {
+    padding: 15px 20px;
+    background: #2563eb;
+    color: white;
 }
 
-.form-msg input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  outline: none;
-  font-size: 14px;
+#chatPage > p {
+    padding: 10px 20px;
+    background: white;
 }
 
-.form-msg input:focus {
-  border-color: #333;
+#chatPage > button {
+    margin: 10px 20px;
+    padding: 9px 15px;
+    background: #ef4444;
+    color: white;
+    border-radius: 5px;
 }
 
-.form-msg button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
+
+/* =========================
+   ONLINE USERS
+========================= */
+
+#chatPage > h2 {
+    padding: 10px 20px;
 }
 
-.form-msg button:hover {
-  background-color: #555;
+#usersList {
+    width: 250px;
+    background: white;
+    border-right: 1px solid #ddd;
+    padding: 15px 20px;
 }
 
-/* Scrollbar */
-
-.chat-display::-webkit-scrollbar {
-  width: 6px;
+#usersList p {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
 }
 
-.chat-display::-webkit-scrollbar-thumb {
-  background-color: #aaa;
-  border-radius: 10px;
+
+/* =========================
+   MESSAGES
+========================= */
+
+#messages {
+    height: 400px;
+    margin: 10px 20px;
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow-y: auto;
 }
 
-/* Mobile */
+#messages p {
+    width: fit-content;
+    max-width: 70%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background: #e5e7eb;
+    border-radius: 8px;
+}
 
-@media (max-width: 600px) {
-  main {
-    width: 95%;
-    padding: 15px;
-  }
 
-  .form-join {
-    flex-direction: column;
-  }
+/* =========================
+   MESSAGE FORM
+========================= */
 
-  .form-msg input {
-    min-width: 0;
-  }
+#messageForm {
+    display: flex;
+    gap: 10px;
+    margin: 10px 20px;
+}
 
-  .form-msg button {
-    padding: 12px 15px;
-  }
+#messageInput {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+#messageForm button {
+    padding: 12px 20px;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+}
+
+#messageForm button:hover {
+    background: #1d4ed8;
+}
+
+
+/* =========================
+   VIDEO CALL PAGE
+========================= */
+
+#callPage {
+    min-height: 100vh;
+    padding: 20px;
+    background: #111827;
+    color: white;
+}
+
+#callPage h1 {
+    margin-bottom: 10px;
+}
+
+#callStatus {
+    margin-bottom: 20px;
+    color: #22c55e;
+}
+
+
+/* =========================
+   VIDEO
+========================= */
+
+#remoteVideo {
+    display: block;
+    width: 80%;
+    max-width: 900px;
+    height: 500px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+#localVideo {
+    position: absolute;
+    right: 40px;
+    bottom: 120px;
+    width: 220px;
+    height: 150px;
+    background: #222;
+    border: 3px solid white;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+
+/* =========================
+   VIDEO CALL BUTTONS
+========================= */
+
+#callPage button {
+    padding: 10px 18px;
+    margin: 10px 5px 0 0;
+    background: #374151;
+    color: white;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+#callPage button:hover {
+    background: #4b5563;
+}
+
+#callPage button[onclick="endCall()"] {
+    background: #ef4444;
+}
+
+#callPage button[onclick="endCall()"]:hover {
+    background: #dc2626;
+}
+
+#callPage button[onclick="closeCallPage()"] {
+    background: #6b7280;
+}
+
+
+/* =========================
+   INCOMING CALL
+========================= */
+
+#incomingCall {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    width: 320px;
+    padding: 20px;
+    background: white;
+    color: #222;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+}
+
+#incomingCall h2 {
+    margin-bottom: 10px;
+}
+
+#incomingCall p {
+    margin-bottom: 15px;
+}
+
+#incomingCall button {
+    padding: 10px 20px;
+    margin-right: 8px;
+    border-radius: 5px;
+    color: white;
+}
+
+#incomingCall button:first-of-type {
+    background: #22c55e;
+}
+
+#incomingCall button:last-of-type {
+    background: #ef4444;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    #loginPage form,
+    #registerPage form {
+        width: 90%;
+    }
+
+    #messages {
+        height: 350px;
+    }
+
+    #remoteVideo {
+        width: 100%;
+        height: 400px;
+    }
+
+    #localVideo {
+        right: 20px;
+        bottom: 130px;
+        width: 140px;
+        height: 100px;
+    }
+
+    #callPage {
+        padding: 15px;
+    }
+
+    #callPage button {
+        margin-top: 8px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    #remoteVideo {
+        height: 300px;
+    }
+
+    #localVideo {
+        width: 110px;
+        height: 80px;
+        right: 15px;
+        bottom: 150px;
+    }
+
+    #messageForm {
+        flex-direction: column;
+    }
+
+    #messageForm button {
+        width: 100%;
+    }
+
 }
