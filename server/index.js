@@ -41,8 +41,22 @@ io.on('connection',socket => {
     const prevRoom = getUser(socket.id)?.room
     if(prevRoom){
       socket.leave(prevRoom)
-      io.to(prevRoom)
+      io.to(prevRoom).emit('message',buildMsg(ADMIN,`${name} has to left thye room`))
     }
+    const user = activateUser(socket.id,name,room)
+
+    if(prevRoom){
+      io.to(prevRoom).emit('userList',{
+        users:getUsersInRoom(prevRoom)` `
+      })
+    }
+    socket.join(user.room)
+
+    socket.emit('message',buildMsg(ADMIN,`You have joined the  ${user.room} chat room`))
+
+   io.to(user.room).emit('userList',{
+    users:getUsersInRoom(user.room)
+   })
   }
   )
 
