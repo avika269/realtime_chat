@@ -1,13 +1,20 @@
 import express from "express"
 import { Server } from "socket.io"
+import mongoose from "mongoose"
 import path from "path"
 import { fileURLToPath } from "url"
+import dotenv from "dotenv"
+
+import Message from "./models/message.js"
+
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const PORT = process.env.PORT || 3500
 const ADMIN = "Admin"
+
 const app = express()
 
 app.use(express.static(path.join(__dirname, "public")))
@@ -16,51 +23,63 @@ const expressServer = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
 
+const io = new Server(expressServer)
+
 const UserState = {
   users: [],
+
   setUsers: function (newUsersArray) {
     this.users = newUsersArray
   }
 }
 
-const io = new Server(expressServer, {
-  cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? false
-        : ["http://localhost:5500", "http://127.0.0.1:5500"]
-  }
-})
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected")
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error:", error)
+  })
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
 
   console.log(`User ${socket.id} connected`)
 
   socket.emit(
     "message",
-    buildMsg(ADMIN, "Welcome to the chat app!")
+    buildMsg(
+      ADMIN,
+      "Welcome to the chat application!"
+    )
   )
 
-  socket.on("enterRoom", ({ name, room }) => {
+  socket.on("enterRoom", async ({ name, room }) => {
 
     const prevRoom = getUser(socket.id)?.room
 
     if (prevRoom) {
+
       socket.leave(prevRoom)
 
       io.to(prevRoom).emit(
         "message",
-        buildMsg(ADMIN, `${name} has left the room`)
+        buildMsg(
+          ADMIN,
+          `${name} has left the room`
+        )
       )
-    }
 
-    const user = activateUser(socket.id, name, room)
-
-    if (prevRoom) {
       io.to(prevRoom).emit("userList", {
         users: getUsersInRoom(prevRoom)
       })
     }
+
+    const user = activateUser(
+      socket.id,
+      name,
+      room
+    )
 
     socket.join(user.room)
 
@@ -72,6 +91,14 @@ io.on("connection", socket => {
       )
     )
 
+    const messages = await Message.find({
+      room: user.room
+    })
+      .sort({ createdAt: 1 })
+      .limit(50)
+
+    socket.emit("messageHistory", messages)
+
     io.to(user.room).emit("userList", {
       users: getUsersInRoom(user.room)
     })
@@ -79,6 +106,42 @@ io.on("connection", socket => {
     io.emit("roomsList", {
       rooms: getAllActiveRooms()
     })
+  })
+
+  socket.on("message", async ({ name, text }) => {
+
+    const user = getUser(socket.id)
+
+    if (!user) {
+      return
+    }
+
+    const message = await Message.create({
+      name,
+      text,
+      room: user.room
+    })
+
+    io.to(user.room).emit(
+      "message",
+      buildMsg(name, text)
+    )
+
+    io.to(user.room).emit(
+      "savedMessage",
+      message
+    )
+  })
+
+  socket.on("activity", (name) => {
+
+    const room = getUser(socket.id)?.room
+
+    if (room) {
+      socket.broadcast
+        .to(room)
+        .emit("activity", name)
+    }
   })
 
   socket.on("disconnect", () => {
@@ -91,7 +154,10 @@ io.on("connection", socket => {
 
       io.to(user.room).emit(
         "message",
-        buildMsg(ADMIN, `${user.name} has left the room`)
+        buildMsg(
+          ADMIN,
+          `${user.name} has left the room`
+        )
       )
 
       io.to(user.room).emit("userList", {
@@ -103,54 +169,40 @@ io.on("connection", socket => {
       })
     }
 
-    console.log(`User ${socket.id} disconnected`)
-  })
-
-  socket.broadcast.emit(
-    "message",
-    `User ${socket.id.substring(0, 5)} connected`
-  )
-
-  socket.on("message", ({ name, text }) => {
-
-    const room = getUser(socket.id)?.room
-
-    if (room) {
-      io.to(room).emit(
-        "message",
-        buildMsg(name, text)
-      )
-    }
-  })
-
-  socket.on("activity", name => {
-
-    const room = getUser(socket.id)?.room
-
-    if (room) {
-      socket.broadcast.to(room).emit("activity", name)
-    }
+    console.log(
+      `User ${socket.id} disconnected`
+    )
   })
 })
 
 function buildMsg(name, text) {
+
   return {
     name,
     text,
-    time: new Intl.DateTimeFormat("default", {
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric"
-    }).format(new Date())
+    time: new Intl.DateTimeFormat(
+      "default",
+      {
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric"
+      }
+    ).format(new Date())
   }
 }
 
 function activateUser(id, name, room) {
 
-  const user = { id, name, room }
+  const user = {
+    id,
+    name,
+    room
+  }
 
   UserState.setUsers([
-    ...UserState.users.filter(user => user.id !== id),
+    ...UserState.users.filter(
+      user => user.id !== id
+    ),
     user
   ])
 
@@ -160,7 +212,9 @@ function activateUser(id, name, room) {
 function userLeavesApp(id) {
 
   UserState.setUsers(
-    UserState.users.filter(user => user.id !== id)
+    UserState.users.filter(
+      user => user.id !== id
+    )
   )
 }
 
@@ -182,7 +236,9 @@ function getAllActiveRooms() {
 
   return Array.from(
     new Set(
-      UserState.users.map(user => user.room)
+      UserState.users.map(
+        user => user.room
+      )
     )
   )
 }

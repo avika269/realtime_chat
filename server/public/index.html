@@ -1,34 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Websockets</title>
-  <link href="style.css" rel="stylesheet">
 
-  <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-+oPj0b6r5f7k1Q9g2F5J5J5F5J5F5J5F5J5F5J5F" crossorigin="anonymous"></script>
-  <script defer src="app.js"></script>
+  <title>Chat Application</title>
+
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
   <main>
-  <form class="form-join">
-    <input type="text" id="name" maxlength="8" placeholder="Your name" size="5"
-required>
-<input type="text" id="room" placeholder="Chat room" size="5" required>
-<button id="join" type="submit">Join</button>
-  </form>
-  <ul class="chat-display"></ul>
-  <p class="user-list"></p>
-  <p class="room-list"></p>
-  <p class="activity"></p>
 
-  
-  <form class="form-msg">
-    <input type="text" name="message" placeholder="Your Meassage" required>
-    <button type="submit">Send</button>
-  </form>
+    <section id="login">
 
-</main>
-  
+      <h1>Join Chat</h1>
+
+      <input
+        type="text"
+        id="name"
+        placeholder="Enter your name"
+      >
+
+      <input
+        type="text"
+        id="room"
+        placeholder="Enter room"
+      >
+
+      <button id="joinBtn">
+        Join Room
+      </button>
+
+    </section>
+
+    <section id="chat" class="hidden">
+
+      <header>
+
+        <h1 id="roomTitle">
+          Chat Room
+        </h1>
+
+      </header>
+
+      <div id="messages"></div>
+
+      <div id="activity"></div>
+
+      <form id="messageForm">
+
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type a message..."
+          autocomplete="off"
+        >
+
+        <button type="submit">
+          Send
+        </button>
+
+      </form>
+
+      <aside>
+
+        <h3>Users</h3>
+
+        <ul id="userList"></ul>
+
+      </aside>
+
+    </section>
+
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+
 </body>
+
 </html>
