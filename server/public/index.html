@@ -1,762 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Chat Application</title>
-
-    <script src="/socket.io/socket.io.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatApp</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- LOGIN PAGE -->
+  <section id="loginPage" class="page">
+    <div class="authBox">
+      <h1>ChatApp</h1>
+      <p>Login to continue</p>
 
-    <section id="loginPage">
+      <form id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email" required>
+        <input id="loginPassword" type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
 
-        <h1>Login</h1>
+      <p id="loginMessage"></p>
 
-        <form id="loginForm">
-
-            <input
-                type="email"
-                id="loginEmail"
-                placeholder="Email"
-                required
-            >
-
-            <br><br>
-
-            <input
-                type="password"
-                id="loginPassword"
-                placeholder="Password"
-                required
-            >
-
-            <br><br>
-
-            <button type="submit">
-                Login
-            </button>
-
-        </form>
-
-        <p>
-            Don't have an account?
-            <button onclick="showPage('registerPage')">
-                Register
-            </button>
-        </p>
-
-    </section>
+      <button class="secondaryButton" onclick="showPage('registerPage')">
+        Create account
+      </button>
+    </div>
+  </section>
 
 
-    <!-- REGISTER PAGE -->
+  <section id="registerPage" class="page" hidden>
+    <div class="authBox">
+      <h1>Create Account</h1>
 
-    <section id="registerPage" hidden>
+      <form id="registerForm">
+        <input id="registerUsername" type="text" placeholder="Username" required>
+        <input id="registerEmail" type="email" placeholder="Email" required>
+        <input id="registerPassword" type="password" placeholder="Password" required>
+        <button type="submit">Register</button>
+      </form>
 
-        <h1>Create Account</h1>
+      <p id="registerMessage"></p>
 
-        <form id="registerForm">
-
-            <input
-                type="text"
-                id="registerUsername"
-                placeholder="Username"
-                required
-            >
-
-            <br><br>
-
-            <input
-                type="email"
-                id="registerEmail"
-                placeholder="Email"
-                required
-            >
-
-            <br><br>
-
-            <input
-                type="password"
-                id="registerPassword"
-                placeholder="Password"
-                required
-            >
-
-            <br><br>
-
-            <button type="submit">
-                Register
-            </button>
-
-        </form>
-
-        <p>
-            Already have an account?
-            <button onclick="showPage('loginPage')">
-                Login
-            </button>
-        </p>
-
-    </section>
+      <button class="secondaryButton" onclick="showPage('loginPage')">
+        Back to Login
+      </button>
+    </div>
+  </section>
 
 
-    <!-- CHAT PAGE -->
+  <section id="chatPage" class="chatPage page" hidden>
 
-    <section id="chatPage" hidden>
+    <aside class="sidebar">
 
-        <h1>Chat Application</h1>
+      <div class="sidebarHeader">
+        <div>
+          <h2>ChatApp</h2>
+          <span id="currentUsername"></span>
+        </div>
 
-        <p>
-            Logged in as:
-            <strong id="currentUsername"></strong>
-        </p>
+        <div class="headerActions">
+          <button onclick="openProfile()">Profile</button>
+          <button onclick="logout()">Logout</button>
+        </div>
+      </div>
 
-        <button onclick="logout()">
-            Logout
+      <div class="searchBox">
+        <input id="userSearch" type="text" placeholder="Search users">
+      </div>
+
+      <div class="sidebarTabs">
+        <button onclick="showSidebar('chats')">Chats</button>
+        <button onclick="showSidebar('users')">Users</button>
+        <button onclick="showSidebar('calls')">Calls</button>
+      </div>
+
+      <div id="chatList" class="sidebarList"></div>
+      <div id="usersList" class="sidebarList" hidden></div>
+      <div id="callsList" class="sidebarList" hidden></div>
+
+    </aside>
+
+
+    <main class="chatArea">
+
+      <header class="chatHeader">
+
+        <div>
+          <h3 id="activeChatName">Select a chat</h3>
+          <span id="activeChatStatus"></span>
+        </div>
+
+        <div class="chatActions">
+          <button onclick="startAudioCall()">Audio</button>
+          <button onclick="startVideoCall()">Video</button>
+          <button onclick="openUserProfile()">Info</button>
+        </div>
+
+      </header>
+
+
+      <div id="typingIndicator"></div>
+
+      <div id="messages" class="messages"></div>
+
+
+      <div id="replyBox" class="replyBox" hidden>
+        <span id="replyText"></span>
+        <button onclick="cancelReply()">×</button>
+      </div>
+
+
+      <form id="messageForm" class="messageForm">
+
+        <button
+          type="button"
+          id="attachmentButton"
+          onclick="document.getElementById('fileInput').click()">
+          +
         </button>
 
-        <hr>
+        <input
+          id="fileInput"
+          type="file"
+          hidden
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip">
+
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Type a message..."
+          autocomplete="off">
+
+        <button type="button" onclick="sendEmoji()">😊</button>
+
+        <button type="submit">Send</button>
+
+      </form>
+
+    </main>
 
 
-        <!-- ONLINE USERS -->
+    <aside id="profilePanel" class="profilePanel" hidden>
 
-        <h2>Online Users</h2>
+      <div class="profileHeader">
+        <h2>My Profile</h2>
+        <button onclick="closeProfile()">×</button>
+      </div>
 
-        <div id="usersList"></div>
+      <div class="profileContent">
+        <div class="profileAvatar" id="myAvatar">A</div>
 
-        <hr>
+        <h3 id="profileUsername"></h3>
+        <p id="profileEmail"></p>
 
+        <textarea id="profileAbout" placeholder="About"></textarea>
 
-        <!-- MESSAGES -->
-
-        <h2>Messages</h2>
-
-        <div id="messages"></div>
-
-        <br>
-
-
-        <!-- MESSAGE INPUT -->
-
-        <form id="messageForm">
-
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Type a message..."
-                autocomplete="off"
-                required
-            >
-
-            <button type="submit">
-                Send
-            </button>
-
-        </form>
-
-        <br>
-
-        <button onclick="openCallPage()">
-            Start Video Call
+        <button onclick="saveProfile()">
+          Save Profile
         </button>
+      </div>
 
-    </section>
+    </aside>
 
-
-    <!-- VIDEO CALL PAGE -->
-
-    <section id="callPage" hidden>
-
-        <h1>Video Call</h1>
-
-        <p id="callStatus">
-            Ready
-        </p>
+  </section>
 
 
-        <!-- REMOTE VIDEO -->
+  <section id="callPage" class="callPage page" hidden>
 
-        <h2>Remote User</h2>
+    <div class="callHeader">
+      <h2 id="callStatus">Calling...</h2>
+      <button onclick="endCall()">End Call</button>
+    </div>
 
-        <video
-            id="remoteVideo"
-            autoplay
-            playsinline
-        ></video>
+    <div class="videoContainer">
 
+      <video
+        id="remoteVideo"
+        autoplay
+        playsinline>
+      </video>
 
-        <!-- LOCAL VIDEO -->
-
-        <h2>My Video</h2>
-
-        <video
-            id="localVideo"
-            autoplay
-            muted
-            playsinline
-        ></video>
-
-        <br><br>
-
-
-        <!-- CALL CONTROLS -->
-
-        <button onclick="startCall()">
-            Start Call
-        </button>
-
-        <button onclick="toggleCamera()">
-            Toggle Camera
-        </button>
-
-        <button onclick="toggleMicrophone()">
-            Toggle Microphone
-        </button>
-
-        <button onclick="endCall()">
-            End Call
-        </button>
-
-        <button onclick="closeCallPage()">
-            Back to Chat
-        </button>
-
-    </section>
-
-
-    <!-- INCOMING CALL -->
-
-    <div id="incomingCall" hidden>
-
-        <h2>Incoming Video Call</h2>
-
-        <p id="callerName"></p>
-
-        <button onclick="acceptCall()">
-            Accept
-        </button>
-
-        <button onclick="rejectCall()">
-            Reject
-        </button>
+      <video
+        id="localVideo"
+        autoplay
+        muted
+        playsinline>
+      </video>
 
     </div>
 
+    <div class="callControls">
+      <button onclick="toggleCamera()">Camera</button>
+      <button onclick="toggleMicrophone()">Microphone</button>
+      <button onclick="endCall()">End</button>
+    </div>
 
-    <script>
+  </section>
 
-        /* SOCKET.IO */
 
-        const socket = io();
+  <div id="incomingCall" class="incomingCall" hidden>
 
+    <div class="incomingBox">
 
-        /* VARIABLES */
+      <h2>Incoming Call</h2>
 
-        let username = "";
+      <p id="callerName"></p>
+      <p id="callerType"></p>
 
-        let currentUserId = "";
+      <div>
+        <button onclick="acceptCall()">Accept</button>
+        <button onclick="rejectCall()">Reject</button>
+      </div>
 
-        let localStream = null;
+    </div>
 
-        let peerConnection = null;
+  </div>
 
-        let incomingOffer = null;
 
-        let callerId = null;
+  <div id="userProfileModal" class="modal" hidden>
 
-        let cameraEnabled = true;
+    <div class="modalBox">
 
-        let microphoneEnabled = true;
+      <button class="closeModal" onclick="closeUserProfile()">×</button>
 
+      <div class="profileAvatar" id="otherAvatar">U</div>
 
-        /* WEBRTC CONFIGURATION */
+      <h2 id="otherUsername"></h2>
+      <p id="otherAbout"></p>
+      <p id="otherStatus"></p>
 
-        const rtcConfiguration = {
+      <button onclick="addContact()">
+        Add Contact
+      </button>
 
-            iceServers: [
+      <button onclick="blockUser()">
+        Block User
+      </button>
 
-                {
-                    urls: "stun:stun.l.google.com:19302"
-                }
+      <button onclick="startVideoCall()">
+        Video Call
+      </button>
 
-            ]
+      <button onclick="startAudioCall()">
+        Audio Call
+      </button>
 
-        };
+    </div>
 
+  </div>
 
-        /* PAGE NAVIGATION */
 
-        function showPage(pageId) {
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
 
-            document
-                .querySelectorAll("section")
-                .forEach(page => {
-
-                    page.hidden = true;
-
-                });
-
-            document
-                .getElementById(pageId)
-                .hidden = false;
-
-        }
-
-
-        /* REGISTER */
-
-        document
-            .getElementById("registerForm")
-            .addEventListener("submit", async function(event) {
-
-                event.preventDefault();
-
-
-                const usernameInput =
-                    document.getElementById(
-                        "registerUsername"
-                    ).value;
-
-                const email =
-                    document.getElementById(
-                        "registerEmail"
-                    ).value;
-
-                const password =
-                    document.getElementById(
-                        "registerPassword"
-                    ).value;
-
-
-                try {
-
-                    const response =
-                        await fetch("/api/register", {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                username:
-                                    usernameInput,
-
-                                email:
-                                    email,
-
-                                password:
-                                    password
-
-                            })
-
-                        });
-
-
-                    const data =
-                        await response.json();
-
-
-                    if (!response.ok) {
-
-                        alert(data.message);
-
-                        return;
-
-                    }
-
-
-                    alert("Registration successful");
-
-                    document
-                        .getElementById("registerForm")
-                        .reset();
-
-                    showPage("loginPage");
-
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    alert(
-                        "Registration failed"
-                    );
-
-                }
-
-            });
-
-
-        /* LOGIN */
-
-        document
-            .getElementById("loginForm")
-            .addEventListener("submit", async function(event) {
-
-                event.preventDefault();
-
-
-                const email =
-                    document.getElementById(
-                        "loginEmail"
-                    ).value;
-
-                const password =
-                    document.getElementById(
-                        "loginPassword"
-                    ).value;
-
-
-                try {
-
-                    const response =
-                        await fetch("/api/login", {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                email:
-                                    email,
-
-                                password:
-                                    password
-
-                            })
-
-                        });
-
-
-                    const data =
-                        await response.json();
-
-
-                    if (!response.ok) {
-
-                        alert(data.message);
-
-                        return;
-
-                    }
-
-
-                    localStorage.setItem(
-                        "token",
-                        data.token
-                    );
-
-
-                    username =
-                        data.username;
-
-
-                    currentUserId =
-                        data.userId;
-
-
-                    document
-                        .getElementById(
-                            "currentUsername"
-                        )
-                        .textContent =
-                        username;
-
-
-                    socket.emit(
-                        "userLogin",
-                        {
-                            username: username
-                        }
-                    );
-
-
-                    document
-                        .getElementById("loginForm")
-                        .reset();
-
-
-                    showPage("chatPage");
-
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    alert(
-                        "Login failed"
-                    );
-
-                }
-
-            });
-
-
-        /* LOGOUT */
-
-        function logout() {
-
-            socket.emit("userLogout");
-
-            localStorage.removeItem("token");
-
-            username = "";
-
-            currentUserId = "";
-
-            closeCall();
-
-            showPage("loginPage");
-
-        }
-
-
-        /* SEND MESSAGE */
-
-        document
-            .getElementById("messageForm")
-            .addEventListener("submit", function(event) {
-
-                event.preventDefault();
-
-
-                const input =
-                    document.getElementById(
-                        "messageInput"
-                    );
-
-
-                const message =
-                    input.value.trim();
-
-
-                if (!message) {
-
-                    return;
-
-                }
-
-
-                socket.emit(
-                    "chatMessage",
-                    {
-
-                        username:
-                            username,
-
-                        message:
-                            message
-
-                    }
-                );
-
-
-                input.value = "";
-
-            });
-
-
-        /* RECEIVE MESSAGE */
-
-        socket.on(
-            "message",
-            function(data) {
-
-                displayMessage(
-                    data.username,
-                    data.message
-                );
-
-            }
-        );
-
-
-        /* DISPLAY MESSAGE */
-
-        function displayMessage(
-            sender,
-            message
-        ) {
-
-            const messages =
-                document.getElementById(
-                    "messages"
-                );
-
-
-            const messageElement =
-                document.createElement(
-                    "p"
-                );
-
-
-            messageElement.textContent =
-                sender + ": " + message;
-
-
-            messages.appendChild(
-                messageElement
-            );
-
-        }
-
-
-        /* ONLINE USERS */
-
-        socket.on(
-            "users",
-            function(users) {
-
-                const usersList =
-                    document.getElementById(
-                        "usersList"
-                    );
-
-
-                usersList.innerHTML = "";
-
-
-                users.forEach(function(user) {
-
-                    const userElement =
-                        document.createElement(
-                            "p"
-                        );
-
-
-                    userElement.textContent =
-                        user.username;
-
-
-                    usersList.appendChild(
-                        userElement
-                    );
-
-                });
-
-            }
-        );
-
-
-        /* OPEN CALL PAGE */
-
-        async function openCallPage() {
-
-            showPage("callPage");
-
-            await startCamera();
-
-        }
-
-
-        /* CLOSE CALL PAGE */
-
-        function closeCallPage() {
-
-            closeCall();
-
-            showPage("chatPage");
-
-        }
-
-
-        /* START CAMERA */
-
-        async function startCamera() {
-
-            try {
-
-                localStream =
-                    await navigator
-                        .mediaDevices
-                        .getUserMedia({
-
-                            video: true,
-
-                            audio: true
-
-                        });
-
-
-                document
-                    .getElementById(
-                        "localVideo"
-                    )
-                    .srcObject =
-                    localStream;
-
-
-                document
-                    .getElementById(
-                        "callStatus"
-                    )
-                    .textContent =
-                    "Camera ready";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                alert(
-                    "Camera and microphone permission required"
-                );
-
-            }
-
-        }
-
-
-        /* CREATE PEER CONNECTION */
-
-        function createPeerConnection() {
-
-            peerConnection =
-                new RTCPeerConnection(
-                    rtcConfiguration
-                );
-
-
-            if (localStream) {
-
-                localStream
-                    .getTracks()
-                    .forEach(function(track) {
-
-                        peerConnection.addTrack(
-                            track,
-                            localStream
-                        );
-
-                    });
-
-            }
-
-
-            /* RECEIVE REMOTE VIDEO */
-
-            peerConnection.ontrack =
-                function(event) {
-
-                    document
-                        .getElementById(
-                            "remoteVideo"
-                        )
-                        .srcObject =
-                        event.streams
-                }
-              }
-                
+</body>
+</html>
