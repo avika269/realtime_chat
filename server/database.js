@@ -64,11 +64,14 @@ const conversationSchema = new mongoose.Schema({
   }
 })
 
+conversationSchema.index({ participants: 1 })
+
 const messageSchema = new mongoose.Schema({
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Conversation",
-    required: true
+    required: true,
+    index: true
   },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
@@ -145,6 +148,8 @@ const messageSchema = new mongoose.Schema({
   }
 })
 
+messageSchema.index({ conversationId: 1, createdAt: 1 })
+
 const callSchema = new mongoose.Schema({
   caller: {
     type: mongoose.Schema.Types.ObjectId,
@@ -207,7 +212,9 @@ export const Contact = mongoose.model("Contact", contactSchema)
 
 export async function connectDB() {
   try {
-    const connection = await mongoose.connect(process.env.MONGO_URI)
+    const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/chatapp"
+
+    const connection = await mongoose.connect(uri)
 
     mediaBucket = new GridFSBucket(connection.connection.db, {
       bucketName: "media"
@@ -216,8 +223,8 @@ export async function connectDB() {
     console.log("MongoDB connected successfully")
   } catch (error) {
     console.log("MongoDB connection failed")
-  console.log("ERROR:", error.message)
-  process.exit(1)
+    console.log("ERROR:", error.message)
+    process.exit(1)
   }
 }
 
@@ -228,7 +235,8 @@ export function getMediaBucket() {
 export async function createConversation(user1, user2) {
   let conversation = await Conversation.findOne({
     participants: {
-      $all: [user1, user2]
+      $all: [user1, user2],
+      $size: 2
     }
   })
 
@@ -243,6 +251,10 @@ export async function createConversation(user1, user2) {
 
 export async function saveMedia(buffer, filename, contentType, metadata = {}) {
   return new Promise((resolve, reject) => {
+    if (!mediaBucket) {
+      return reject(new Error("GridFS media bucket not initialized"))
+    }
+
     const uploadStream = mediaBucket.openUploadStream(filename, {
       contentType,
       metadata
@@ -259,6 +271,10 @@ export async function saveMedia(buffer, filename, contentType, metadata = {}) {
 }
 
 export async function getMedia(fileId) {
+  if (!ObjectId.isValid(fileId)) {
+    return null
+  }
+
   const id = new ObjectId(fileId)
 
   const files = await mongoose.connection.db
@@ -276,11 +292,15 @@ export async function getMedia(fileId) {
 }
 
 export async function deleteMedia(fileId) {
+  if (!ObjectId.isValid(fileId) || !mediaBucket) {
+    return
+  }
+
   const id = new ObjectId(fileId)
 
   try {
     await mediaBucket.delete(id)
   } catch (error) {
-    console.log(error)
+    console.log("Error deleting media:", error.message)
   }
 }

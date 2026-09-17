@@ -29,6 +29,7 @@
   "homepage": "https://github.com/avika269/realtime_chat#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.2",
