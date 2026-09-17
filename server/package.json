@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type":"module",
   "scripts": {
-    "start": "node ."
+    "start": "node .",
+    "dev":"nodemon ."
   },
   "repository": {
     "type": "git",
@@ -13,9 +15,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  
   "bugs": {
     "url": "https://github.com/avika269/realtime_chat/issues"
   },
-  "homepage": "https://github.com/avika269/realtime_chat#readme"
+  "homepage": "https://github.com/avika269/realtime_chat#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

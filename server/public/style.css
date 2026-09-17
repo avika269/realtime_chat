@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+main {
+  width: 90%;
+  max-width: 700px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Join Form */
+
+.form-join {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-join input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  font-size: 14px;
+}
+
+.form-join input:focus {
+  border-color: #333;
+}
+
+.form-join button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+}
+
+.form-join button:hover {
+  background-color: #555;
+}
+
+/* Chat Display */
+
+.chat-display {
+  height: 350px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #fafafa;
+}
+
+.chat-display li {
+  background-color: #e9e9e9;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+}
+
+/* User List */
+
+.user-list {
+  padding: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Room List */
+
+.room-list {
+  padding: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Activity */
+
+.activity {
+  padding: 8px;
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+}
+
+/* Message Form */
+
+.form-msg {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.form-msg input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  font-size: 14px;
+}
+
+.form-msg input:focus {
+  border-color: #333;
+}
+
+.form-msg button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+}
+
+.form-msg button:hover {
+  background-color: #555;
+}
+
+/* Scrollbar */
+
+.chat-display::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-display::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+  border-radius: 10px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  main {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .form-join {
+    flex-direction: column;
+  }
+
+  .form-msg input {
+    min-width: 0;
+  }
+
+  .form-msg button {
+    padding: 12px 15px;
+  }
+}
