@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseChat — Next-Gen Realtime Communication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <section id="loginPage" class="page authScreen">
+    <div class="glowBall glow1"></div>
+    <div class="glowBall glow2"></div>
+
+    <div class="authBox glassPanel">
+      <div class="authHeader">
+        <div class="brandLogo">✦</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to your account</p>
+      </div>
+
+      <form id="loginForm" class="authForm">
+        <div class="inputField">
+          <input id="loginEmail" type="email" placeholder=" " required>
+          <label>Email Address</label>
+        </div>
+
+        <div class="inputField">
+          <input id="loginPassword" type="password" placeholder=" " required>
+          <label>Password</label>
+        </div>
+
+        <button type="submit" class="primaryBtn glowEffect">Login to Account</button>
+      </form>
+
+      <p id="loginMessage" class="feedbackMessage"></p>
+
+      <div class="authFooter">
+        <span>Don't have an account?</span>
+        <button type="button" class="linkBtn" onclick="showPage('registerPage')">Create Account</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="registerPage" class="page authScreen" hidden>
+    <div class="glowBall glow1"></div>
+    <div class="glowBall glow2"></div>
+
+    <div class="authBox glassPanel">
+      <div class="authHeader">
+        <div class="brandLogo">✦</div>
+        <h1>Create Account</h1>
+        <p>Get started with PulseChat</p>
+      </div>
+
+      <form id="registerForm" class="authForm">
+        <div class="inputField">
+          <input id="registerUsername" type="text" placeholder=" " required>
+          <label>Username</label>
+        </div>
+
+        <div class="inputField">
+          <input id="registerEmail" type="email" placeholder=" " required>
+          <label>Email Address</label>
+        </div>
+
+        <div class="inputField">
+          <input id="registerPassword" type="password" placeholder=" " required>
+          <label>Password</label>
+        </div>
+
+        <button type="submit" class="primaryBtn glowEffect">Register Now</button>
+      </form>
+
+      <p id="registerMessage" class="feedbackMessage"></p>
+
+      <div class="authFooter">
+        <span>Already registered?</span>
+        <button type="button" class="linkBtn" onclick="showPage('loginPage')">Back to Login</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="chatPage" class="chatPage page" hidden>
+
+    <aside class="sidebar glassPanel">
+
+      <div class="sidebarHeader">
+        <div class="userChip">
+          <div class="avatarRing">
+            <div class="userMiniAvatar">✦</div>
+          </div>
+          <div class="userMeta">
+            <h2>PulseChat</h2>
+            <span id="currentUsername"></span>
+          </div>
+        </div>
+
+        <div class="headerActions">
+          <button type="button" class="iconBtn" onclick="openProfile()" title="My Profile">⚙️</button>
+          <button type="button" class="iconBtn dangerBtn" onclick="logout()" title="Logout">🚪</button>
+        </div>
+      </div>
+
+      <div class="searchContainer">
+        <div class="searchField">
+          <span class="searchIcon">🔍</span>
+          <input id="userSearch" type="text" placeholder="Search people...">
+        </div>
+      </div>
+
+      <div class="sidebarTabs">
+        <button type="button" id="tabChats" class="tabBtn activeTab" onclick="showSidebar('chats')">Chats</button>
+        <button type="button" id="tabUsers" class="tabBtn" onclick="showSidebar('users')">Users</button>
+        <button type="button" id="tabCalls" class="tabBtn" onclick="showSidebar('calls')">Calls</button>
+      </div>
+
+      <div class="listScrollArea">
+        <div id="chatList" class="sidebarList"></div>
+        <div id="usersList" class="sidebarList" hidden></div>
+        <div id="callsList" class="sidebarList" hidden></div>
+      </div>
+
+    </aside>
+
+    <main class="chatArea">
+
+      <header class="chatHeader glassPanel">
+        <div class="chatHeaderLeft">
+          <button type="button" class="mobileBackBtn" onclick="closeMobileChat()">←</button>
+          <div class="activeChatAvatar" id="activeChatAvatarBox">✦</div>
+          <div class="activeChatInfo">
+            <h3 id="activeChatName">Select a chat</h3>
+            <span id="activeChatStatus" class="statusBadge">Offline</span>
+          </div>
+        </div>
+
+        <div class="chatActions">
+          <button type="button" class="actionPill" onclick="startAudioCall()" title="Audio Call">📞 Call</button>
+          <button type="button" class="actionPill gradientPill" onclick="startVideoCall()" title="Video Call">📹 Video</button>
+          <button type="button" class="actionPill" onclick="openUserProfile()" title="User Details">ℹ️ Info</button>
+        </div>
+      </header>
+
+      <div id="typingIndicator" class="typingBar"></div>
+
+      <div id="messages" class="messagesContainer"></div>
+
+      <div id="replyBox" class="replyPreviewBar" hidden>
+        <div class="replyContent">
+          <span class="replyLabel">Replying to</span>
+          <span id="replyText" class="replyPreviewText"></span>
+        </div>
+        <button type="button" class="closeReplyBtn" onclick="cancelReply()">✕</button>
+      </div>
+
+      <form id="messageForm" class="messageDock glassPanel">
+        <button
+          type="button"
+          id="attachmentButton"
+          class="dockIconBtn"
+          onclick="document.getElementById('fileInput').click()"
+          title="Attach file">
+          📎
+        </button>
+
+        <input
+          id="fileInput"
+          type="file"
+          hidden
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip">
+
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Write your message..."
+          autocomplete="off">
+
+        <button type="button" class="dockIconBtn" onclick="sendEmoji()" title="Emoji">😊</button>
+
+        <button type="submit" class="sendBtn glowEffect">
+          <span>Send</span>
+          <span class="sendArrow">➤</span>
+        </button>
+      </form>
+
+    </main>
+
+    <aside id="profilePanel" class="profileDrawer glassPanel" hidden>
+      <div class="drawerHeader">
+        <h2>My Profile</h2>
+        <button type="button" class="closeDrawerBtn" onclick="closeProfile()">✕</button>
+      </div>
+
+      <div class="drawerContent">
+        <div class="profileAvatarLarge" id="myAvatar">U</div>
+        <h3 id="profileUsername">Username</h3>
+        <p id="profileEmail" class="emailText">email@example.com</p>
+
+        <div class="drawerInputGroup">
+          <label>About / Status</label>
+          <textarea id="profileAbout" placeholder="Write something about yourself..."></textarea>
+        </div>
+
+        <button type="button" class="primaryBtn" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </aside>
+
+  </section>
+
+  <section id="callPage" class="callPage page" hidden>
+    <div class="callHeaderBar">
+      <div class="callStatusPill">
+        <span class="liveDot"></span>
+        <h2 id="callStatus">Calling...</h2>
+      </div>
+      <button type="button" class="hangupBtn" onclick="endCall()">End Call</button>
+    </div>
+
+    <div class="videoViewport">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+
+    <div class="callControlsBar glassPanel">
+      <button type="button" class="callControlBtn" onclick="toggleCamera()" title="Toggle Camera">📷 Video</button>
+      <button type="button" class="callControlBtn" onclick="toggleMicrophone()" title="Toggle Mic">🎤 Mic</button>
+      <button type="button" class="callControlBtn endCallBtn" onclick="endCall()" title="Hang Up">🛑 End</button>
+    </div>
+  </section>
+
+  <div id="incomingCall" class="callModalBackdrop" hidden>
+    <div class="incomingCallCard glassPanel glowEffect">
+      <div class="radarPing"></div>
+      <div class="incomingAvatar">📞</div>
+      <h2>Incoming Call</h2>
+      <p id="callerName" class="callerNameText">Caller</p>
+      <p id="callerType" class="callerTypeText">Video Call</p>
+
+      <div class="incomingButtonsRow">
+        <button type="button" id="acceptCall" class="callActionBtn accept">Accept</button>
+        <button type="button" id="rejectCall" class="callActionBtn reject">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="userProfileModal" class="callModalBackdrop" hidden>
+    <div class="userInfoCard glassPanel">
+      <button type="button" class="closeCardBtn" onclick="closeUserProfile()">✕</button>
+      <div class="profileAvatarLarge" id="otherAvatar">U</div>
+      <h2 id="otherUsername">Username</h2>
+      <p id="otherStatus" class="userStatusText">Offline</p>
+      <p id="otherAbout" class="userAboutText">No status available.</p>
+
+      <div class="cardActionsStack">
+        <button type="button" class="secondaryActionBtn" onclick="addContact()">＋ Add to Contacts</button>
+        <button type="button" class="secondaryActionBtn danger" onclick="blockUser()">🚫 Block User</button>
+        <div class="callActionsGroup">
+          <button type="button" class="primaryBtn" onclick="startVideoCall()">Start Video</button>
+          <button type="button" class="secondaryActionBtn" onclick="startAudioCall()">Start Audio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
