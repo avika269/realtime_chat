@@ -7,7 +7,7 @@ import { fileURLToPath } from "url"
 import dotenv from "dotenv"
 
 import { connectDB } from "./config/db.js"
-import authRoutes from "./routes/authroutes.js"
+import authRoutes from "./routes/authRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import chatRoutes from "./routes/chatRoutes.js"
 import mediaRoutes from "./routes/mediaRoutes.js"
