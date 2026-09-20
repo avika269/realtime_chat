@@ -2,43 +2,34 @@ const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const { OAuth2Client } = require("google-auth-library")
+const { registerSchema, loginSchema, googleAuthSchema, collegeEmailValidator } = require("../validators/authValidator")
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
-const COLLEGE_DOMAIN = "@akgec.ac.in"
-
-function isCollegeEmail(email) {
-  return typeof email === "string" && email.trim().toLowerCase().endsWith(COLLEGE_DOMAIN)
-}
 
 exports.register = async (req, res) => {
   try {
-    const { username, email, password } = req.body
+    const parseResult = registerSchema.safeParse(req.body)
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" })
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.errors[0].message
+      return res.status(400).json({ message: errorMessage })
     }
 
-    if (!isCollegeEmail(email)) {
-      return res.status(400).json({ 
-        message: "Registration restricted: Only @akgec.ac.in college email addresses are allowed" 
-      })
-    }
-
-    const normalizedEmail = email.trim().toLowerCase()
+    const { username, email, password } = parseResult.data
 
     const existingUser = await User.findOne({
-      $or: [{ email: normalizedEmail }, { username: username.trim() }]
+      $or: [{ email }, { username }]
     })
 
     if (existingUser) {
-      return res.status(400).json({ message: "Username or college email is already registered" })
+      return res.status(400).json({ message: "Username or email is already registered" })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await User.create({
-      username: username.trim(),
-      email: normalizedEmail,
+      username,
+      email,
       password: hashedPassword
     })
 
@@ -60,20 +51,16 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const parseResult = loginSchema.safeParse(req.body)
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" })
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.errors[0].message
+      return res.status(400).json({ message: errorMessage })
     }
 
-    if (!isCollegeEmail(email)) {
-      return res.status(400).json({ 
-        message: "Access denied: Only @akgec.ac.in college email addresses are allowed" 
-      })
-    }
+    const { email, password } = parseResult.data
 
-    const normalizedEmail = email.trim().toLowerCase()
-    const user = await User.findOne({ email: normalizedEmail })
+    const user = await User.findOne({ email })
 
     if (!user || !user.password) {
       return res.status(400).json({ message: "Invalid email or password" })
@@ -102,11 +89,14 @@ exports.login = async (req, res) => {
 
 exports.googleLogin = async (req, res) => {
   try {
-    const { credential } = req.body
+    const parseResult = googleAuthSchema.safeParse(req.body)
 
-    if (!credential) {
-      return res.status(400).json({ message: "Missing Google authentication credential" })
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.errors[0].message
+      return res.status(400).json({ message: errorMessage })
     }
+
+    const { credential } = parseResult.data
 
     const ticket = await client.verifyIdToken({
       idToken: credential,
@@ -116,13 +106,14 @@ exports.googleLogin = async (req, res) => {
     const payload = ticket.getPayload()
     const { email, name, picture, sub: googleId } = payload
 
-    if (!isCollegeEmail(email)) {
+    const emailCheck = collegeEmailValidator.safeParse(email)
+    if (!emailCheck.success) {
       return res.status(403).json({
-        message: "Access restricted: Only @akgec.ac.in Google accounts are allowed to enter"
+        message: "Access restricted: Only @akgec.ac.in Google accounts are permitted."
       })
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedEmail = email.toLowerCase().trim()
     let user = await User.findOne({ email: normalizedEmail })
 
     if (!user) {
