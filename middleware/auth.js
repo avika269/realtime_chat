@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken")
+import jwt from "jsonwebtoken"
 
-module.exports = (req, res, next) => {
+export const authenticate = (req, res, next) => {
   try {
     const authHeader = req.header("Authorization") || req.header("authorization")
 
@@ -28,6 +28,5 @@ module.exports = (req, res, next) => {
   }
 }
 
-authenticate.authenticate = authenticate
-authenticate.auth = authenticate
-module.exports = authenticate
+export const auth = authenticate
+export default authenticate
