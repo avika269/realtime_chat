@@ -1,198 +1,45 @@
-import User from "../models/User.js"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-import { OAuth2Client } from "google-auth-library"
-import {
+import { z } from "zod"
+
+export const collegeEmailValidator = z
+  .string({ required_error: "Email is required" })
+  .trim()
+  .toLowerCase()
+  .email({ message: "Invalid email format" })
+  .refine(
+    (email) => email.endsWith("@akgec.ac.in"),
+    {
+      message: "Only @akgec.ac.in college email addresses are allowed"
+    }
+  )
+
+export const registerSchema = z.object({
+  username: z
+    .string({ required_error: "Username is required" })
+    .trim()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(30, { message: "Username cannot exceed 30 characters" }),
+  email: collegeEmailValidator,
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(6, { message: "Password must be at least 6 characters long" })
+})
+
+export const loginSchema = z.object({
+  email: collegeEmailValidator,
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(1, { message: "Password is required" })
+})
+
+export const googleAuthSchema = z.object({
+  credential: z
+    .string({ required_error: "Google credential token is required" })
+    .min(10, { message: "Invalid credential token" })
+})
+
+export default {
+  collegeEmailValidator,
   registerSchema,
   loginSchema,
-  googleAuthSchema,
-  collegeEmailValidator
-} from "../validators/authValidator.js"
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
-
-export const register = async (req, res) => {
-  try {
-    const parseResult = registerSchema.safeParse(req.body)
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.errors[0].message
-      return res.status(400).json({ message: errorMessage })
-    }
-
-    const { username, email, password } = parseResult.data
-
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    })
-
-    if (existingUser) {
-      return res.status(400).json({ message: "Username or email is already registered" })
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    const user = await User.create({
-      username,
-      email,
-      password: hashedPassword
-    })
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
-
-    res.status(201).json({
-      token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar
-      }
-    })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const login = async (req, res) => {
-  try {
-    const parseResult = loginSchema.safeParse(req.body)
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.errors[0].message
-      return res.status(400).json({ message: errorMessage })
-    }
-
-    const { email, password } = parseResult.data
-
-    const user = await User.findOne({ email })
-
-    if (!user || !user.password) {
-      return res.status(400).json({ message: "Invalid email or password" })
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" })
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
-
-    res.json({
-      token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar
-      }
-    })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const googleLogin = async (req, res) => {
-  try {
-    const parseResult = googleAuthSchema.safeParse(req.body)
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.errors[0].message
-      return res.status(400).json({ message: errorMessage })
-    }
-
-    const { credential } = parseResult.data
-
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
-    })
-
-    const payload = ticket.getPayload()
-    const { email, picture, sub: googleId } = payload
-
-    const emailCheck = collegeEmailValidator.safeParse(email)
-    if (!emailCheck.success) {
-      return res.status(403).json({
-        message: "Access restricted: Only @akgec.ac.in Google accounts are permitted."
-      })
-    }
-
-    const normalizedEmail = email.toLowerCase().trim()
-    let user = await User.findOne({ email: normalizedEmail })
-
-    if (!user) {
-      const baseUsername = normalizedEmail.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "")
-      let candidateUsername = baseUsername || `user_${Date.now().toString().slice(-4)}`
-      let count = 1
-
-      while (await User.findOne({ username: candidateUsername })) {
-        candidateUsername = `${baseUsername}${count}`
-        count++
-      }
-
-      user = await User.create({
-        username: candidateUsername,
-        email: normalizedEmail,
-        avatar: picture || "",
-        googleId
-      })
-    } else if (!user.googleId) {
-      user.googleId = googleId
-      if (picture && !user.avatar) {
-        user.avatar = picture
-      }
-      await user.save()
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
-
-    res.json({
-      token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar
-      }
-    })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.userId).select("-password")
-    if (!user) {
-      return res.status(404).json({ message: "User not found" })
-    }
-    res.json({ user })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const updateProfile = async (req, res) => {
-  try {
-    const { about, avatar } = req.body
-    const updates = {}
-
-    if (about !== undefined) updates.about = String(about).trim()
-    if (avatar !== undefined) updates.avatar = String(avatar).trim()
-
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      { $set: updates },
-      { new: true }
-    ).select("-password")
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" })
-    }
-
-    res.json({ user, message: "Profile updated successfully" })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
+  googleAuthSchema
 }
