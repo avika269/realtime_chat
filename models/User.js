@@ -1,52 +1,41 @@
-import mongoose from "mongoose"
+const mongoose = require("mongoose")
 
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId
+      }
+    },
+    avatar: {
+      type: String,
+      default: ""
+    },
+    googleId: {
+      type: String,
+      default: null
+    },
+    status: {
+      type: String,
+      enum: ["online", "offline"],
+      default: "offline"
+    }
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: false,
-    default: ""
-  },
-  googleId: {
-    type: String,
-    default: ""
-  },
-  profilePicture: {
-    type: String,
-    default: ""
-  },
-  about: {
-    type: String,
-    default: "Hey there! I am using ChatApp."
-  },
-  online: {
-    type: Boolean,
-    default: false
-  },
-  lastSeen: {
-    type: Date,
-    default: Date.now
-  },
-  blockedUsers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-})
+  { timestamps: true }
+)
 
-export const User = mongoose.model("User", userSchema)
+module.exports = mongoose.model("User", userSchema)
