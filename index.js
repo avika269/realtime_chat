@@ -35,7 +35,7 @@ const io = new Server(httpServer, {
 
 app.use(cors())
 app.use(express.json({ limit: "10mb" }))
-app.use(express.static(path.join(__dirname, "public")))
+app.use(express.static(path.join(__dirname)))
 
 await connectDB()
 
@@ -50,7 +50,7 @@ io.use(socketAuth)
 registerChatSocket(io)
 
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"))
+  res.sendFile(path.join(__dirname,"index.html"))
 })
 
 httpServer.listen(PORT, "0.0.0.0", () => {
