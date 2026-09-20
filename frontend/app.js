@@ -125,6 +125,11 @@ async function api(url, options = {}) {
     headers
   })
 
+  if (response.status === 401) {
+    logout()
+    throw new Error("Session expired. Please log in again.")
+  }
+
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
@@ -598,6 +603,11 @@ function connectSocket() {
 }
 
 async function loadUsers(search = "") {
+  if (!token) {
+    showPage("loginPage")
+    return
+  }
+
   const container = safeGet("usersList")
   if (!container) return
 
@@ -626,7 +636,6 @@ async function loadUsers(search = "") {
       container.appendChild(element)
     })
   } catch (error) {
-    console.error("Error loading users:", error)
     container.innerHTML = `
       <div style="padding: 1rem; color: #ef4444; text-align: center; font-size: 0.85rem;">
         Failed to load users: ${escapeHtml(error.message)}
@@ -636,6 +645,11 @@ async function loadUsers(search = "") {
 }
 
 async function loadConversations() {
+  if (!token) {
+    showPage("loginPage")
+    return
+  }
+
   try {
     const conversations = await api("/api/conversations")
     const container = safeGet("chatList")
@@ -647,7 +661,7 @@ async function loadConversations() {
       container.innerHTML = `
         <div style="padding: 2rem 1.25rem; text-align: center; color: #94a3b8; font-size: 0.88rem;">
           No active conversations.<br>
-          <small style="opacity: 0.7;">Click on "Students" tab to start chatting.</small>
+          <small style="opacity: 0.7;">Click on "Users" tab to start chatting.</small>
         </div>
       `
       return
@@ -937,7 +951,7 @@ async function saveProfile() {
     const aboutInput = safeGet("profileAbout")
     const about = aboutInput ? aboutInput.value : ""
 
-    await api("/api/profile", {
+    await api("/api/auth/profile", {
       method: "PATCH",
       body: { about }
     })
@@ -961,7 +975,7 @@ async function openUserProfile() {
     const avatarEl = safeGet("otherAvatar")
 
     if (usernameEl) usernameEl.textContent = user.username
-    if (aboutEl) aboutEl.textContent = user.about || "Hey there! I am using AKGEC PulseChat."
+    if (aboutEl) aboutEl.textContent = user.about || "Hey there! I am using PulseChat."
     if (statusEl) {
       statusEl.textContent = user.online ? "Online" : formatLastSeen(user.lastSeen)
     }
@@ -1018,6 +1032,8 @@ function showSidebar(type) {
 }
 
 async function loadCalls() {
+  if (!token) return
+
   try {
     const calls = await api("/api/calls")
     const container = safeGet("callsList")
