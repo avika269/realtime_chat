@@ -1,4 +1,4 @@
-import { Call } from "../models/Call.js"
+import { Call } from "../models/call.js"
 
 export async function getCalls(req, res) {
   try {

@@ -1,6 +1,6 @@
 
 import { User } from "../models/User.js"
-import { Contact } from "../models/Contact.js"
+import { Contact } from "../models/contact.js"
 
 export async function getUsers(req, res) {
   try {
