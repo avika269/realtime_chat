@@ -1,17 +1,17 @@
-const User = require("../models/User")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const { OAuth2Client } = require("google-auth-library")
-const {
+import User from "../models/User.js"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import { OAuth2Client } from "google-auth-library"
+import {
   registerSchema,
   loginSchema,
   googleAuthSchema,
   collegeEmailValidator
-} = require("../validators/authValidator")
+} from "../validators/authValidator.js"
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const parseResult = registerSchema.safeParse(req.body)
 
@@ -54,7 +54,7 @@ exports.register = async (req, res) => {
   }
 }
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const parseResult = loginSchema.safeParse(req.body)
 
@@ -92,7 +92,7 @@ exports.login = async (req, res) => {
   }
 }
 
-exports.googleLogin = async (req, res) => {
+export const googleLogin = async (req, res) => {
   try {
     const parseResult = googleAuthSchema.safeParse(req.body)
 
@@ -161,13 +161,37 @@ exports.googleLogin = async (req, res) => {
   }
 }
 
-exports.getMe = async (req, res) => {
+export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password")
     if (!user) {
       return res.status(404).json({ message: "User not found" })
     }
     res.json({ user })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { about, avatar } = req.body
+    const updates = {}
+
+    if (about !== undefined) updates.about = String(about).trim()
+    if (avatar !== undefined) updates.avatar = String(avatar).trim()
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: updates },
+      { new: true }
+    ).select("-password")
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    res.json({ user, message: "Profile updated successfully" })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
