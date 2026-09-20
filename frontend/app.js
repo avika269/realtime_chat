@@ -29,6 +29,8 @@ let iceCandidatesQueue = []
 let typingTimeout = null
 let messagesCache = []
 
+const GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
+
 const rtcConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
@@ -57,6 +59,10 @@ function showPage(pageId) {
   if (page) {
     page.hidden = false
     page.style.display = ""
+  }
+
+  if (pageId === "loginPage" || pageId === "registerPage") {
+    renderGoogleButton()
   }
 }
 
@@ -120,6 +126,70 @@ async function api(url, options = {}) {
   }
 
   return data
+}
+
+function renderGoogleButton() {
+  if (typeof google === "undefined" || !google.accounts || !google.accounts.id) {
+    setTimeout(renderGoogleButton, 300)
+    return
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredentialResponse
+  })
+
+  const loginTarget = safeGet("googleBtnLogin")
+  if (loginTarget) {
+    google.accounts.id.renderButton(loginTarget, {
+      theme: "filled_blue",
+      size: "large",
+      width: 320,
+      text: "continue_with"
+    })
+  }
+
+  const registerTarget = safeGet("googleBtnRegister")
+  if (registerTarget) {
+    google.accounts.id.renderButton(registerTarget, {
+      theme: "filled_blue",
+      size: "large",
+      width: 320,
+      text: "signup_with"
+    })
+  }
+}
+
+async function handleGoogleCredentialResponse(response) {
+  try {
+    const data = await api("/api/google", {
+      method: "POST",
+      body: {
+        idToken: response.credential
+      }
+    })
+
+    token = data.token
+    username = data.username
+    loggedInUserId = data.userId
+
+    localStorage.setItem("token", token)
+
+    const userHeader = safeGet("currentUsername")
+    if (userHeader) userHeader.textContent = username
+
+    connectSocket()
+    showPage("chatPage")
+
+    await loadConversations()
+    await loadUsers()
+  } catch (error) {
+    const loginMsg = safeGet("loginMessage")
+    if (loginMsg) loginMsg.textContent = error.message
+
+    const regMsg = safeGet("registerMessage")
+    if (regMsg) regMsg.textContent = error.message
+  }
 }
 
 async function startVideoCall() {
@@ -518,7 +588,7 @@ async function loadUsers(search = "") {
       container.innerHTML = `
         <div style="padding: 2rem 1.25rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">
           No other users found.<br>
-          <small style="opacity: 0.7;">Open an Incognito window to register a 2nd user.</small>
+          <small style="opacity: 0.7;">Sign in with another college account to test.</small>
         </div>
       `
       return
@@ -1165,6 +1235,7 @@ function setupEventListeners() {
 
 async function initialize() {
   setupEventListeners()
+  renderGoogleButton()
 
   if (!token) {
     showPage("loginPage")

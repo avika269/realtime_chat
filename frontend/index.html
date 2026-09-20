@@ -7,9 +7,36 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     [hidden] {
       display: none !important;
+    }
+    .oauthDivider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0.5rem 0;
+    }
+    .oauthDivider::before, .oauthDivider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .oauthDivider:not(:empty)::before {
+      margin-right: 0.75em;
+    }
+    .oauthDivider:not(:empty)::after {
+      margin-left: 0.75em;
+    }
+    .googleButtonContainer {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
     }
   </style>
   <link rel="stylesheet" href="style.css">
@@ -25,8 +52,12 @@
       <div class="authHeader">
         <div class="brandLogo">✦</div>
         <h1>Welcome Back</h1>
-        <p>Sign in to your account</p>
+        <p>Sign in with your college email</p>
       </div>
+
+      <div class="googleButtonContainer" id="googleBtnLogin"></div>
+
+      <div class="oauthDivider">OR CONTINUE WITH PASSWORD</div>
 
       <form id="loginForm" class="authForm">
         <div class="inputField">
@@ -59,8 +90,12 @@
       <div class="authHeader">
         <div class="brandLogo">✦</div>
         <h1>Create Account</h1>
-        <p>Get started with PulseChat</p>
+        <p>Use your college email</p>
       </div>
+
+      <div class="googleButtonContainer" id="googleBtnRegister"></div>
+
+      <div class="oauthDivider">OR REGISTER MANUALLY</div>
 
       <form id="registerForm" class="authForm">
         <div class="inputField">
@@ -70,7 +105,7 @@
 
         <div class="inputField">
           <input id="registerEmail" type="email" placeholder=" " required>
-          <label>Email Address</label>
+          <label>College Email Address</label>
         </div>
 
         <div class="inputField">
