@@ -29,13 +29,14 @@
   "homepage": "https://github.com/avika269/realtime_chat#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "google-auth-library": "^11.1.0",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.18.1",
+    "mongoose": "^8.24.4",
     "multer": "^2.0.2",
     "socket.io": "^4.8.3",
     "zod": "^4.6.5"
