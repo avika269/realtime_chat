@@ -1,7 +1,7 @@
 import { User } from "../models/User.js"
-import { Message } from "../models/message.js"
-import { Call } from "../models/Call.js"
-import { createConversation } from "../models/Conversation.js"
+import { Message } from "../models/Message.js"
+import { Call } from "../models/call.js"
+import { createConversation } from "../models/conversation.js"
 
 const onlineUsers = new Map()
 
