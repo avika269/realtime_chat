@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema(
   {
@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    about: {
+      type: String,
+      default: "Hey there! I am using PulseChat."
+    },
     googleId: {
       type: String,
       default: null
@@ -48,4 +52,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
-module.exports = mongoose.model("User", userSchema)
+const User = mongoose.models.User || mongoose.model("User", userSchema)
+
+export { User }
+export default User
