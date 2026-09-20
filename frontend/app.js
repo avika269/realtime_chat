@@ -17,7 +17,7 @@ let incomingOffer = null
 let callerId = null
 let callerCallId = null
 let callerType = "video"
-
+const BACKEND_URL = window.location.port === "5500" ? "http://localhost:3500" : ""
 let currentCallId = null
 let currentCallType = "video"
 
@@ -113,7 +113,7 @@ async function api(url, options = {}) {
     options.body = JSON.stringify(options.body)
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(BACKEND_URL+url, {
     ...options,
     headers
   })
