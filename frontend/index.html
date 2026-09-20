@@ -61,8 +61,15 @@
 
       <form id="loginForm" class="authForm">
         <div class="inputField">
-          <input id="loginEmail" type="email" placeholder=" " required>
-          <label>Email Address</label>
+          <input 
+            id="loginEmail" 
+            type="email" 
+            placeholder=" " 
+            pattern="[a-zA-Z0-9._%+-]+@akgec\.ac\.in$" 
+            title="Please use your official @akgec.ac.in college email address" 
+            required
+          >
+          <label>College Email Address</label>
         </div>
 
         <div class="inputField">
@@ -104,12 +111,19 @@
         </div>
 
         <div class="inputField">
-          <input id="registerEmail" type="email" placeholder=" " required>
+          <input 
+            id="registerEmail" 
+            type="email" 
+            placeholder=" " 
+            pattern="[a-zA-Z0-9._%+-]+@akgec\.ac\.in$" 
+            title="Please use your official @akgec.ac.in college email address" 
+            required
+          >
           <label>College Email Address</label>
         </div>
 
         <div class="inputField">
-          <input id="registerPassword" type="password" placeholder=" " required>
+          <input id="registerPassword" type="password" placeholder=" " minlength="6" required>
           <label>Password</label>
         </div>
 

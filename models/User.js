@@ -13,7 +13,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
+      validate: {
+        validator: function (v) {
+          return /^[a-zA-Z0-9._%+-]+@akgec\.ac\.in$/i.test(v)
+        },
+        message: "Email must be a valid @akgec.ac.in college address"
+      }
     },
     password: {
       type: String,
@@ -33,6 +39,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["online", "offline"],
       default: "offline"
+    },
+    lastSeen: {
+      type: Date,
+      default: Date.now
     }
   },
   { timestamps: true }
