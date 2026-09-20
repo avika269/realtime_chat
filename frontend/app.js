@@ -29,8 +29,7 @@ let iceCandidatesQueue = []
 let typingTimeout = null
 let messagesCache = []
 
-const GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"
-
+const GOOGLE_CLIENT_ID ="433889585065-9ltgsff9rgd5b6oco7p6f8647uksfp14.apps.googleusercontent.com"
 const rtcConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
