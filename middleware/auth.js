@@ -27,3 +27,7 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ message: "Authentication failed. Invalid or expired token." })
   }
 }
+
+authenticate.authenticate = authenticate
+authenticate.auth = authenticate
+module.exports = authenticate
