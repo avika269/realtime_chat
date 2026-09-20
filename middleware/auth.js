@@ -1,33 +1,29 @@
-import jwt from "jsonwebtoken"
-import { User } from "../models/User.js"
+const jwt = require("jsonwebtoken")
 
-export function getTokenFromRequest(req) {
-  const auth = req.headers.authorization
-  if (!auth) return null
-
-  const parts = auth.split(" ")
-  if (parts.length !== 2) return null
-
-  return parts[1]
-}
-
-export async function authenticate(req, res, next) {
+module.exports = (req, res, next) => {
   try {
-    const token = getTokenFromRequest(req)
+    const authHeader = req.header("Authorization") || req.header("authorization")
+
+    if (!authHeader) {
+      return res.status(401).json({ message: "Access denied. No token provided." })
+    }
+
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : authHeader.trim()
+
     if (!token) {
-      return res.status(401).json({ message: "Authentication required" })
+      return res.status(401).json({ message: "Invalid token format." })
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret")
-    const user = await User.findById(decoded.id)
+    const secret = process.env.JWT_SECRET || "default_jwt_secret_key"
+    const decoded = jwt.verify(token, secret)
 
-    if (!user) {
-      return res.status(401).json({ message: "User not found" })
-    }
+    req.userId = decoded.id || decoded.userId || decoded._id
+    req.user = decoded
 
-    req.user = user
     next()
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" })
+    return res.status(401).json({ message: "Authentication failed. Invalid or expired token." })
   }
 }

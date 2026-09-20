@@ -2,7 +2,12 @@ const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const { OAuth2Client } = require("google-auth-library")
-const { registerSchema, loginSchema, googleAuthSchema, collegeEmailValidator } = require("../validators/authValidator")
+const {
+  registerSchema,
+  loginSchema,
+  googleAuthSchema,
+  collegeEmailValidator
+} = require("../validators/authValidator")
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
@@ -104,7 +109,7 @@ exports.googleLogin = async (req, res) => {
     })
 
     const payload = ticket.getPayload()
-    const { email, name, picture, sub: googleId } = payload
+    const { email, picture, sub: googleId } = payload
 
     const emailCheck = collegeEmailValidator.safeParse(email)
     if (!emailCheck.success) {
@@ -151,6 +156,18 @@ exports.googleLogin = async (req, res) => {
         avatar: user.avatar
       }
     })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password")
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+    res.json({ user })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
