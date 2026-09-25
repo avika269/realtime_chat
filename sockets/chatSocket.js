@@ -1,349 +1,775 @@
-import { User } from "../models/User.js"
-import { Message } from "../models/Message.js"
-import { Call } from "../models/call.js"
-import { createConversation } from "../models/conversation.js"
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import Message from "../models/Message.js";
+import Conversation from "../models/Conversation.js";
 
-const onlineUsers = new Map()
+const onlineUsers =
+    new Map();
 
-export function registerChatSocket(io) {
-  io.on("connection", async socket => {
-    const user = socket.user
-    const userId = user._id.toString()
+const userSockets =
+    new Map();
 
-    onlineUsers.set(userId, {
-      socketId: socket.id,
-      username: user.username
-    })
+function getToken(socket) {
 
-    socket.join(userId)
+    const authToken =
+        socket.handshake.auth?.token;
 
-    await User.findByIdAndUpdate(user._id, { online: true })
+    if (authToken) {
+        return authToken;
+    }
 
-    io.emit("userStatus", {
-      userId,
-      online: true,
-      username: user.username
-    })
+    const header =
+        socket.handshake.headers?.authorization;
 
-    socket.on("privateMessage", async data => {
-      try {
-        const {
-          receiverId,
-          text = "",
-          type = "text",
-          mediaId = "",
-          mediaName = "",
-          mediaType = "",
-          mediaSize = 0,
-          replyTo = null
-        } = data
+    if (
+        header &&
+        header.startsWith("Bearer ")
+    ) {
+        return header.substring(7);
+    }
 
-        if (!receiverId) {
-          socket.emit("messageError", { message: "Receiver is required" })
-          return
+    return null;
+}
+
+
+async function authenticateSocket(
+    socket
+) {
+
+    const token =
+        getToken(socket);
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+
+        const decoded =
+            jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
+
+        const user =
+            await User.findById(
+                decoded.id
+            );
+
+        return user;
+
+    } catch (error) {
+
+        return null;
+    }
+}
+
+
+function addUserSocket(
+    userId,
+    socketId
+) {
+
+    const key =
+        userId.toString();
+
+    if (!userSockets.has(key)) {
+        userSockets.set(
+            key,
+            new Set()
+        );
+    }
+
+    userSockets
+        .get(key)
+        .add(socketId);
+
+    onlineUsers.set(
+        key,
+        true
+    );
+}
+
+
+function removeUserSocket(
+    userId,
+    socketId
+) {
+
+    const key =
+        userId.toString();
+
+    const sockets =
+        userSockets.get(
+            key
+        );
+
+    if (!sockets) {
+        return false;
+    }
+
+    sockets.delete(
+        socketId
+    );
+
+    if (
+        sockets.size === 0
+    ) {
+
+        userSockets.delete(
+            key
+        );
+
+        onlineUsers.delete(
+            key
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+
+function emitToUser(
+    userId,
+    event,
+    data
+) {
+
+    const sockets =
+        userSockets.get(
+            userId.toString()
+        );
+
+    if (!sockets) {
+        return;
+    }
+
+    sockets.forEach(
+        socketId => {
+
+            const socket =
+                global.io
+                    .sockets
+                    .sockets
+                    .get(
+                        socketId
+                    );
+
+            if (socket) {
+                socket.emit(
+                    event,
+                    data
+                );
+            }
         }
+    );
+}
 
-        const receiver = await User.findById(receiverId)
-        if (!receiver) {
-          socket.emit("messageError", { message: "Receiver not found" })
-          return
+
+export default function socketHandler(
+    io
+) {
+
+    global.io =
+        io;
+
+    io.on(
+        "connection",
+        async socket => {
+
+            const user =
+                await authenticateSocket(
+                    socket
+                );
+
+            if (!user) {
+
+                socket.emit(
+                    "auth:error",
+                    {
+                        message:
+                            "Socket authentication failed"
+                    }
+                );
+
+                socket.disconnect();
+
+                return;
+            }
+
+            const userId =
+                user._id.toString();
+
+            socket.userId =
+                userId;
+
+            socket.join(
+                `user:${userId}`
+            );
+
+            addUserSocket(
+                userId,
+                socket.id
+            );
+
+            await User.findByIdAndUpdate(
+                userId,
+                {
+                    status:
+                        "online"
+                }
+            );
+
+            io.emit(
+                "presence:update",
+                {
+                    userId,
+                    status: "online"
+                }
+            );
+
+            console.log(
+                `User ${user.name} connected`
+            );
+
+
+            socket.on(
+                "conversation:join",
+                conversationId => {
+
+                    socket.join(
+                        `conversation:${conversationId}`
+                    );
+                }
+            );
+
+
+            socket.on(
+                "conversation:leave",
+                conversationId => {
+
+                    socket.leave(
+                        `conversation:${conversationId}`
+                    );
+                }
+            );
+
+
+            socket.on(
+                "message:send",
+                async data => {
+
+                    try {
+
+                        const {
+                            conversationId,
+                            receiverId,
+                            text
+                        } = data;
+
+                        if (
+                            !conversationId ||
+                            !receiverId ||
+                            !String(
+                                text || ""
+                            ).trim()
+                        ) {
+                            return;
+                        }
+
+                        const conversation =
+                            await Conversation.findById(
+                                conversationId
+                            );
+
+                        if (!conversation) {
+                            return;
+                        }
+
+                        const isParticipant =
+                            conversation.participants.some(
+                                id =>
+                                    id.toString() ===
+                                    userId
+                            );
+
+                        if (!isParticipant) {
+                            return;
+                        }
+
+                        const message =
+                            await Message.create({
+                                conversation:
+                                    conversationId,
+
+                                sender:
+                                    userId,
+
+                                receiver:
+                                    receiverId,
+
+                                text:
+                                    String(
+                                        text
+                                    ).trim(),
+
+                                mediaType:
+                                    "text"
+                            });
+
+                        conversation.lastMessage =
+                            message._id;
+
+                        conversation.lastMessageText =
+                            message.text;
+
+                        conversation.lastMessageAt =
+                            new Date();
+
+                        await conversation.save();
+
+                        const populatedMessage =
+                            await Message.findById(
+                                message._id
+                            )
+                                .populate(
+                                    "sender",
+                                    "name email profilePicture"
+                                )
+                                .populate(
+                                    "receiver",
+                                    "name email profilePicture"
+                                );
+
+                        io.to(
+                            `conversation:${conversationId}`
+                        ).emit(
+                            "message:new",
+                            populatedMessage
+                        );
+
+                        emitToUser(
+                            receiverId,
+                            "message:new",
+                            populatedMessage
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "message:send error",
+                            error
+                        );
+                    }
+                }
+            );
+
+
+            socket.on(
+                "message:seen",
+                async data => {
+
+                    try {
+
+                        const message =
+                            await Message.findById(
+                                data.messageId
+                            );
+
+                        if (!message) {
+                            return;
+                        }
+
+                        if (
+                            message.receiver.toString() !==
+                            userId
+                        ) {
+                            return;
+                        }
+
+                        message.seen =
+                            true;
+
+                        message.seenAt =
+                            new Date();
+
+                        await message.save();
+
+                        emitToUser(
+                            message.sender,
+                            "message:seen",
+                            {
+                                messageId:
+                                    message._id,
+
+                                seenAt:
+                                    message.seenAt
+                            }
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            error
+                        );
+                    }
+                }
+            );
+
+
+            socket.on(
+                "typing:start",
+                data => {
+
+                    socket
+                        .to(
+                            `conversation:${data.conversationId}`
+                        )
+                        .emit(
+                            "typing:start",
+                            {
+                                userId,
+                                conversationId:
+                                    data.conversationId
+                            }
+                        );
+                }
+            );
+
+
+            socket.on(
+                "typing:stop",
+                data => {
+
+                    socket
+                        .to(
+                            `conversation:${data.conversationId}`
+                        )
+                        .emit(
+                            "typing:stop",
+                            {
+                                userId,
+                                conversationId:
+                                    data.conversationId
+                            }
+                        );
+                }
+            );
+
+
+            socket.on(
+                "message:edit",
+                async data => {
+
+                    try {
+
+                        const message =
+                            await Message.findById(
+                                data.messageId
+                            );
+
+                        if (!message) {
+                            return;
+                        }
+
+                        if (
+                            message.sender.toString() !==
+                            userId
+                        ) {
+                            return;
+                        }
+
+                        const text =
+                            String(
+                                data.text || ""
+                            ).trim();
+
+                        if (!text) {
+                            return;
+                        }
+
+                        message.text =
+                            text;
+
+                        message.edited =
+                            true;
+
+                        message.editedAt =
+                            new Date();
+
+                        await message.save();
+
+                        io.to(
+                            `conversation:${message.conversation}`
+                        ).emit(
+                            "message:edited",
+                            {
+                                messageId:
+                                    message._id,
+
+                                text:
+                                    message.text,
+
+                                editedAt:
+                                    message.editedAt
+                            }
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            error
+                        );
+                    }
+                }
+            );
+
+
+            socket.on(
+                "message:delete",
+                async data => {
+
+                    try {
+
+                        const message =
+                            await Message.findById(
+                                data.messageId
+                            );
+
+                        if (!message) {
+                            return;
+                        }
+
+                        if (
+                            message.sender.toString() !==
+                            userId
+                        ) {
+                            return;
+                        }
+
+                        message.deleted =
+                            true;
+
+                        message.deletedAt =
+                            new Date();
+
+                        message.text =
+                            "";
+
+                        message.mediaUrl =
+                            "";
+
+                        await message.save();
+
+                        io.to(
+                            `conversation:${message.conversation}`
+                        ).emit(
+                            "message:deleted",
+                            {
+                                messageId:
+                                    message._id
+                            }
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            error
+                        );
+                    }
+                }
+            );
+
+
+            socket.on(
+                "call:initiate",
+                data => {
+
+                    const {
+                        targetUserId,
+                        callType,
+                        callId
+                    } = data;
+
+                    emitToUser(
+                        targetUserId,
+                        "call:incoming",
+                        {
+                            callId,
+                            callerId:
+                                userId,
+                            callerName:
+                                user.name,
+                            callerPicture:
+                                user.profilePicture,
+                            callType
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "call:accept",
+                data => {
+
+                    emitToUser(
+                        data.callerId,
+                        "call:accepted",
+                        {
+                            callId:
+                                data.callId,
+                            receiverId:
+                                userId
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "call:reject",
+                data => {
+
+                    emitToUser(
+                        data.callerId,
+                        "call:rejected",
+                        {
+                            callId:
+                                data.callId,
+                            receiverId:
+                                userId
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "call:end",
+                data => {
+
+                    emitToUser(
+                        data.targetUserId,
+                        "call:ended",
+                        {
+                            callId:
+                                data.callId
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "webrtc:offer",
+                data => {
+
+                    emitToUser(
+                        data.targetUserId,
+                        "webrtc:offer",
+                        {
+                            callerId:
+                                userId,
+
+                            callId:
+                                data.callId,
+
+                            offer:
+                                data.offer
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "webrtc:answer",
+                data => {
+
+                    emitToUser(
+                        data.targetUserId,
+                        "webrtc:answer",
+                        {
+                            receiverId:
+                                userId,
+
+                            callId:
+                                data.callId,
+
+                            answer:
+                                data.answer
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "webrtc:ice",
+                data => {
+
+                    emitToUser(
+                        data.targetUserId,
+                        "webrtc:ice",
+                        {
+                            callId:
+                                data.callId,
+
+                            candidate:
+                                data.candidate
+                        }
+                    );
+                }
+            );
+
+
+            socket.on(
+                "disconnect",
+                async () => {
+
+                    const becameOffline =
+                        removeUserSocket(
+                            userId,
+                            socket.id
+                        );
+
+                    if (
+                        becameOffline
+                    ) {
+
+                        const lastSeen =
+                            new Date();
+
+                        await User.findByIdAndUpdate(
+                            userId,
+                            {
+                                status:
+                                    "offline",
+
+                                lastSeen
+                            }
+                        );
+
+                        io.emit(
+                            "presence:update",
+                            {
+                                userId,
+                                status:
+                                    "offline",
+
+                                lastSeen
+                            }
+                        );
+                    }
+
+                    console.log(
+                        `User ${user.name} disconnected`
+                    );
+                }
+            );
         }
-
-        const blockedByReceiver = receiver.blockedUsers.some(
-          id => id.toString() === userId
-        )
-        const blockedBySender = user.blockedUsers.some(
-          id => id.toString() === receiverId
-        )
-
-        if (blockedByReceiver || blockedBySender) {
-          socket.emit("messageError", { message: "Message cannot be sent" })
-          return
-        }
-
-        const conversation = await createConversation(user._id, receiver._id)
-
-        const message = await Message.create({
-          conversationId: conversation._id,
-          sender: user._id,
-          receiver: receiver._id,
-          text,
-          type,
-          mediaId,
-          mediaName,
-          mediaType,
-          mediaSize,
-          replyTo
-        })
-
-        conversation.lastMessage = message._id
-        conversation.updatedAt = new Date()
-        await conversation.save()
-
-        const populatedMessage = await Message.findById(message._id)
-          .populate("sender", "username profilePicture")
-          .populate("receiver", "username profilePicture")
-          .populate("replyTo")
-
-        io.to(receiverId).emit("privateMessage", populatedMessage)
-        socket.emit("privateMessage", populatedMessage)
-      } catch (error) {
-        console.error(error)
-        socket.emit("messageError", { message: "Message could not be sent" })
-      }
-    })
-
-    socket.on("typing", data => {
-      const targetUserId = data.to || data.receiverId
-      if (!targetUserId) return
-
-      io.to(targetUserId).emit("typing", {
-        userId,
-        from: userId,
-        username: user.username,
-        typing: data.typing
-      })
-    })
-
-    socket.on("messageRead", async data => {
-      try {
-        if (!data.messageId) return
-
-        const message = await Message.findByIdAndUpdate(
-          data.messageId,
-          { read: true },
-          { new: true }
-        )
-
-        if (!message) return
-
-        io.to(message.sender.toString()).emit("messageRead", {
-          messageId: message._id.toString()
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("editMessage", async data => {
-      try {
-        const message = await Message.findOne({
-          _id: data.messageId,
-          sender: user._id
-        })
-
-        if (!message) return
-
-        message.text = data.text
-        message.edited = true
-        message.updatedAt = new Date()
-        await message.save()
-
-        const receiverId = message.receiver.toString()
-        const payload = {
-          messageId: message._id.toString(),
-          text: message.text,
-          edited: true
-        }
-
-        io.to(receiverId).emit("messageEdited", payload)
-        socket.emit("messageEdited", payload)
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("deleteMessage", async data => {
-      try {
-        const message = await Message.findOne({
-          _id: data.messageId,
-          sender: user._id
-        })
-
-        if (!message) return
-
-        message.deleted = true
-        message.text = "This message was deleted"
-        message.updatedAt = new Date()
-        await message.save()
-
-        const receiverId = message.receiver.toString()
-        const payload = { messageId: message._id.toString() }
-
-        io.to(receiverId).emit("messageDeleted", payload)
-        socket.emit("messageDeleted", payload)
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("reaction", async data => {
-      try {
-        const message = await Message.findById(data.messageId)
-        if (!message) return
-
-        const existingReaction = message.reactions.find(
-          reaction => reaction.user.toString() === userId
-        )
-
-        if (existingReaction) {
-          existingReaction.reaction = data.reaction
-        } else {
-          message.reactions.push({
-            user: user._id,
-            reaction: data.reaction
-          })
-        }
-
-        await message.save()
-
-        const payload = {
-          messageId: message._id.toString(),
-          reactions: message.reactions
-        }
-
-        io.to(message.sender.toString()).emit("reactionUpdated", payload)
-        io.to(message.receiver.toString()).emit("reactionUpdated", payload)
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("callUser", async data => {
-      try {
-        const { to, type, offer } = data
-        if (!to || !type || !offer) {
-          socket.emit("callUnavailable")
-          return
-        }
-
-        const receiver = await User.findById(to)
-        if (!receiver) {
-          socket.emit("callUnavailable")
-          return
-        }
-
-        const blockedByReceiver = receiver.blockedUsers.some(
-          id => id.toString() === userId
-        )
-        const blockedByCaller = user.blockedUsers.some(
-          id => id.toString() === to
-        )
-
-        if (blockedByReceiver || blockedByCaller) {
-          socket.emit("callUnavailable")
-          return
-        }
-
-        const targetSocket = onlineUsers.get(to)
-        if (!targetSocket) {
-          socket.emit("callUnavailable")
-          return
-        }
-
-        const call = await Call.create({
-          caller: user._id,
-          receiver: receiver._id,
-          type,
-          status: "calling"
-        })
-
-        io.to(to).emit("incomingCall", {
-          callId: call._id.toString(),
-          from: userId,
-          username: user.username,
-          type,
-          offer
-        })
-      } catch (error) {
-        console.error(error)
-        socket.emit("callUnavailable")
-      }
-    })
-
-    socket.on("callAccepted", async data => {
-      try {
-        const { to, callId, answer } = data
-        if (!to || !callId || !answer) return
-
-        await Call.findByIdAndUpdate(callId, { status: "accepted" })
-
-        io.to(to).emit("callAccepted", {
-          callId,
-          from: userId,
-          answer
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("callRejected", async data => {
-      try {
-        const { to, callId } = data
-        if (callId) {
-          await Call.findByIdAndUpdate(callId, { status: "rejected" })
-        }
-        if (!to) return
-
-        io.to(to).emit("callRejected", {
-          callId,
-          from: userId
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("iceCandidate", data => {
-      try {
-        const { to, candidate } = data
-        if (!to || !candidate) return
-
-        io.to(to).emit("iceCandidate", {
-          from: userId,
-          candidate
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("endCall", async data => {
-      try {
-        const { to, callId } = data
-        if (callId) {
-          await Call.findByIdAndUpdate(callId, { status: "ended" })
-        }
-        if (!to) return
-
-        io.to(to).emit("endCall", {
-          callId,
-          from: userId
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-
-    socket.on("disconnect", async () => {
-      const currentUser = onlineUsers.get(userId)
-
-      if (currentUser && currentUser.socketId === socket.id) {
-        onlineUsers.delete(userId)
-
-        await User.findByIdAndUpdate(user._id, {
-          online: false,
-          lastSeen: new Date()
-        })
-
-        io.emit("userStatus", {
-          userId,
-          online: false,
-          username: user.username,
-          lastSeen: new Date()
-        })
-      }
-    })
-  })
+    );
 }

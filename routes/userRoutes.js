@@ -1,10 +1,69 @@
-import express from "express"
-import { getUsers, getUserById } from "../controllers/userController.js"
-import { authenticate } from "../middleware/auth.js"
+import express from "express";
 
-const router = express.Router()
+import {
+    getMe,
+    getUser,
+    updateProfile,
+    updateSettings,
+    changePassword,
+    searchUsers,
+    deleteAccount,
+    getPublicProfile
+} from "../controllers/userController.js";
 
-router.get("/", authenticate, getUsers)
-router.get("/:id", authenticate, getUserById)
+import authMiddleware from "../middleware/authMiddleware.js";
 
-export default router
+import upload from "../middleware/uploadMiddleware.js";
+
+const router = express.Router();
+
+router.get(
+    "/me",
+    authMiddleware,
+    getMe
+);
+
+router.get(
+    "/search",
+    authMiddleware,
+    searchUsers
+);
+
+router.get(
+    "/profile/:id",
+    authMiddleware,
+    getPublicProfile
+);
+
+router.get(
+    "/:id",
+    authMiddleware,
+    getUser
+);
+
+router.patch(
+    "/profile",
+    authMiddleware,
+    upload.single("profilePicture"),
+    updateProfile
+);
+
+router.patch(
+    "/settings",
+    authMiddleware,
+    updateSettings
+);
+
+router.patch(
+    "/password",
+    authMiddleware,
+    changePassword
+);
+
+router.delete(
+    "/account",
+    authMiddleware,
+    deleteAccount
+);
+
+export default router;

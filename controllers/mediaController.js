@@ -1,61 +1,90 @@
-import { saveMedia, getMedia, getMediaBucket, deleteMedia as removeMedia } from "../config/db.js"
+import Contact from "../models/contact.js"
+import User from "../models/User.js"
 
-export async function uploadMedia(req, res) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" })
+export const getContacts = async (
+    req,
+    res
+) => {
+    try {
+        const contacts =
+            await Contact.find({
+                owner: req.user.id
+            }).populate(
+                "contact",
+                "name email profilePicture status lastSeen"
+            )
+
+        res.json(
+            contacts.map(item => item.contact)
+        )
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
     }
-
-    const mediaId = await saveMedia(
-      req.file.buffer,
-      req.file.originalname,
-      req.file.mimetype,
-      { uploadedBy: req.user._id.toString() }
-    )
-
-    res.json({
-      message: "File uploaded",
-      mediaId,
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size
-    })
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Media upload failed" })
-  }
 }
 
-export async function streamMedia(req, res) {
-  try {
-    const file = await getMedia(req.params.id)
+export const searchContacts = async (
+    req,
+    res
+) => {
+    try {
+        const q =
+            req.query.q || ""
 
-    if (!file) {
-      return res.status(404).json({ message: "File not found" })
+        const users =
+            await User.find({
+                _id: {
+                    $ne: req.user.id
+                },
+                $or: [
+                    {
+                        name: {
+                            $regex: q,
+                            $options: "i"
+                        }
+                    },
+                    {
+                        email: {
+                            $regex: q,
+                            $options: "i"
+                        }
+                    }
+                ]
+            }).select(
+                "name email profilePicture status lastSeen"
+            )
+
+        res.json(users)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
     }
-
-    res.setHeader("Content-Type", file.contentType || "application/octet-stream")
-
-    const bucket = getMediaBucket()
-    const stream = bucket.openDownloadStream(file._id)
-
-    stream.on("error", () => {
-      res.status(404).end()
-    })
-
-    stream.pipe(res)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Unable to load media" })
-  }
 }
 
-export async function deleteMediaFile(req, res) {
-  try {
-    await removeMedia(req.params.id)
-    res.json({ message: "Media deleted" })
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Unable to delete media" })
-  }
+export const getContact = async (
+    req,
+    res
+) => {
+    try {
+        const user =
+            await User.findById(
+                req.params.userId
+            ).select(
+                "name email profilePicture bio college status lastSeen"
+            )
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
+
+        res.json(user)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
 }

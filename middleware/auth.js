@@ -1,32 +1,38 @@
 import jwt from "jsonwebtoken"
 
-export const authenticate = (req, res, next) => {
-  try {
-    const authHeader = req.header("Authorization") || req.header("authorization")
+export const authenticate = (
+    req,
+    res,
+    next
+) => {
+    try {
+        const header =
+            req.headers.authorization
 
-    if (!authHeader) {
-      return res.status(401).json({ message: "Access denied. No token provided." })
+        if (
+            !header ||
+            !header.startsWith("Bearer ")
+        ) {
+            return res.status(401).json({
+                message: "Authentication required"
+            })
+        }
+
+        const token =
+            header.split(" ")[1]
+
+        const decoded =
+            jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            )
+
+        req.user = decoded
+
+        next()
+    } catch (error) {
+        res.status(401).json({
+            message: "Invalid or expired token"
+        })
     }
-
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7).trim()
-      : authHeader.trim()
-
-    if (!token) {
-      return res.status(401).json({ message: "Invalid token format." })
-    }
-
-    const secret = process.env.JWT_SECRET || "default_jwt_secret_key"
-    const decoded = jwt.verify(token, secret)
-
-    req.userId = decoded.id || decoded.userId || decoded._id
-    req.user = decoded
-
-    next()
-  } catch (error) {
-    return res.status(401).json({ message: "Authentication failed. Invalid or expired token." })
-  }
 }
-
-export const auth = authenticate
-export default authenticate

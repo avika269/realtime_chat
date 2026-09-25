@@ -1,329 +1,811 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PulseChat — Next-Gen Realtime Communication</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-    [hidden] {
-      display: none !important;
-    }
-    .oauthDivider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      color: #64748b;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin: 0.5rem 0;
-    }
-    .oauthDivider::before, .oauthDivider::after {
-      content: "";
-      flex: 1;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .oauthDivider:not(:empty)::before {
-      margin-right: 0.75em;
-    }
-    .oauthDivider:not(:empty)::after {
-      margin-left: 0.75em;
-    }
-    .googleButtonContainer {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      min-height: 44px;
-    }
-  </style>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PulseChat</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/style.css"
+    >
 </head>
 
 <body>
 
-  <section id="loginPage" class="page authScreen">
-    <div class="glowBall glow1"></div>
-    <div class="glowBall glow2"></div>
+<div id="authPage" class="auth-page">
 
-    <div class="authBox glassPanel">
-      <div class="authHeader">
-        <div class="brandLogo">✦</div>
-        <h1>Welcome Back</h1>
-        <p>Sign in with your @akgec.ac.in email</p>
-      </div>
+    <div class="auth-container">
 
-      <div class="googleButtonContainer" id="googleBtnLogin"></div>
+        <div class="auth-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-comments"></i>
+            </div>
 
-      <div class="oauthDivider">OR CONTINUE WITH PASSWORD</div>
+            <h1>PulseChat</h1>
 
-      <form id="loginForm" class="authForm">
-        <div class="inputField">
-          <input 
-            id="loginEmail" 
-            type="email" 
-            placeholder=" " 
-            pattern="[a-zA-Z0-9._%+-]+@akgec\.ac\.in$" 
-            title="Please use your official @akgec.ac.in email address" 
-            required
-          >
-          <label>@akgec.ac.in</label>
+            <p>
+                Chat, connect and share with your college community.
+            </p>
         </div>
 
-        <div class="inputField">
-          <input id="loginPassword" type="password" placeholder=" " required>
-          <label>Password</label>
+        <div class="auth-card">
+
+            <div class="auth-tabs">
+
+                <button
+                    id="loginTab"
+                    class="auth-tab active"
+                >
+                    Login
+                </button>
+
+                <button
+                    id="registerTab"
+                    class="auth-tab"
+                >
+                    Register
+                </button>
+
+            </div>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+
+                    <label>Email</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="College email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Password</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            placeholder="Password"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Login
+                </button>
+
+            </form>
+
+            <form
+                id="registerForm"
+                class="hidden"
+            >
+
+                <div class="form-group">
+
+                    <label>Name</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="registerName"
+                            placeholder="Your name"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>College email</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            id="registerEmail"
+                            placeholder="College email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>College</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-building-columns"></i>
+
+                        <input
+                            type="text"
+                            id="registerCollege"
+                            placeholder="College name"
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Password</label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="registerPassword"
+                            placeholder="Minimum 6 characters"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Create account
+                </button>
+
+            </form>
+
+            <div
+                id="authMessage"
+                class="auth-message"
+            ></div>
+
         </div>
 
-        <button type="submit" class="primaryBtn glowEffect">Login to Account</button>
-      </form>
-
-      <p id="loginMessage" class="feedbackMessage"></p>
-
-      <div class="authFooter">
-        <span>Don't have an account?</span>
-        <button type="button" class="linkBtn" onclick="showPage('registerPage')">Create Account</button>
-      </div>
     </div>
-  </section>
 
-  <section id="registerPage" class="page authScreen" hidden>
-    <div class="glowBall glow1"></div>
-    <div class="glowBall glow2"></div>
+</div>
 
-    <div class="authBox glassPanel">
-      <div class="authHeader">
-        <div class="brandLogo">✦</div>
-        <h1>Create Account</h1>
-        <p>Use your @akgec.ac.in email</p>
-      </div>
 
-      <div class="googleButtonContainer" id="googleBtnRegister"></div>
+<div
+    id="mainApp"
+    class="main-app hidden"
+>
 
-      <div class="oauthDivider">OR REGISTER MANUALLY</div>
+    <aside class="sidebar">
 
-      <form id="registerForm" class="authForm">
-        <div class="inputField">
-          <input id="registerUsername" type="text" placeholder=" " required>
-          <label>Username</label>
+        <div class="sidebar-brand">
+
+            <div class="brand-icon small">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+
+            <span>PulseChat</span>
+
         </div>
 
-        <div class="inputField">
-          <input 
-            id="registerEmail" 
-            type="email" 
-            placeholder=" " 
-            pattern="[a-zA-Z0-9._%+-]+@akgec\.ac\.in$" 
-            title="Please use your official @akgec.ac.in email address" 
-            required
-          >
-          <label>@akgec.ac.in</label>
-        </div>
+        <nav class="main-navigation">
 
-        <div class="inputField">
-          <input id="registerPassword" type="password" placeholder=" " minlength="6" required>
-          <label>Password</label>
-        </div>
+            <button
+                class="nav-item active"
+                data-page="home"
+            >
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </button>
 
-        <button type="submit" class="primaryBtn glowEffect">Register Now</button>
-      </form>
+            <button
+                class="nav-item"
+                data-page="messages"
+            >
+                <i class="fa-solid fa-message"></i>
+                <span>Messages</span>
+            </button>
 
-      <p id="registerMessage" class="feedbackMessage"></p>
+            <button
+                class="nav-item"
+                data-page="calls"
+            >
+                <i class="fa-solid fa-phone"></i>
+                <span>Calls</span>
+            </button>
 
-      <div class="authFooter">
-        <span>Already registered?</span>
-        <button type="button" class="linkBtn" onclick="showPage('loginPage')">Back to Login</button>
-      </div>
-    </div>
-  </section>
+            <button
+                class="nav-item"
+                data-page="profile"
+            >
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </button>
 
-  <section id="chatPage" class="chatPage page" hidden>
+            <button
+                class="nav-item"
+                data-page="settings"
+            >
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </button>
 
-    <aside class="sidebar glassPanel">
+        </nav>
 
-      <div class="sidebarHeader">
-        <div class="userChip">
-          <div class="avatarRing">
-            <div class="userMiniAvatar">✦</div>
-          </div>
-          <div class="userMeta">
-            <h2>PulseChat</h2>
-            <span id="currentUsername"></span>
-          </div>
-        </div>
-
-        <div class="headerActions">
-          <button type="button" class="iconBtn" onclick="openProfile()" title="My Profile">⚙️</button>
-          <button type="button" class="iconBtn dangerBtn" onclick="logout()" title="Logout">🚪</button>
-        </div>
-      </div>
-
-      <div class="searchContainer">
-        <div class="searchField">
-          <span class="searchIcon">🔍</span>
-          <input id="userSearch" type="text" placeholder="Search people...">
-        </div>
-      </div>
-
-      <div class="sidebarTabs">
-        <button type="button" id="tabChats" class="tabBtn activeTab" onclick="showSidebar('chats')">Chats</button>
-        <button type="button" id="tabUsers" class="tabBtn" onclick="showSidebar('users')">Users</button>
-        <button type="button" id="tabCalls" class="tabBtn" onclick="showSidebar('calls')">Calls</button>
-      </div>
-
-      <div class="listScrollArea">
-        <div id="chatList" class="sidebarList"></div>
-        <div id="usersList" class="sidebarList" hidden></div>
-        <div id="callsList" class="sidebarList" hidden></div>
-      </div>
+        <button
+            id="logoutButton"
+            class="logout-button"
+        >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </button>
 
     </aside>
 
-    <main class="chatArea">
 
-      <header class="chatHeader glassPanel">
-        <div class="chatHeaderLeft">
-          <button type="button" class="mobileBackBtn" onclick="closeMobileChat()">←</button>
-          <div class="activeChatAvatar" id="activeChatAvatarBox">✦</div>
-          <div class="activeChatInfo">
-            <h3 id="activeChatName">Select a chat</h3>
-            <span id="activeChatStatus" class="statusBadge">Offline</span>
-          </div>
-        </div>
+    <main class="content-area">
 
-        <div class="chatActions">
-          <button type="button" class="actionPill" onclick="startAudioCall()" title="Audio Call">📞 Call</button>
-          <button type="button" class="actionPill gradientPill" onclick="startVideoCall()" title="Video Call">📹 Video</button>
-          <button type="button" class="actionPill" onclick="openUserProfile()" title="User Details">ℹ️ Info</button>
-        </div>
-      </header>
+        <section
+            id="homePage"
+            class="page active-page"
+        >
 
-      <div id="typingIndicator" class="typingBar"></div>
+            <div class="page-header">
 
-      <div id="messages" class="messagesContainer"></div>
+                <div>
+                    <h2>Home</h2>
+                    <p>What's happening?</p>
+                </div>
 
-      <div id="replyBox" class="replyPreviewBar" hidden>
-        <div class="replyContent">
-          <span class="replyLabel">Replying to</span>
-          <span id="replyText" class="replyPreviewText"></span>
-        </div>
-        <button type="button" class="closeReplyBtn" onclick="cancelReply()">✕</button>
-      </div>
+                <button
+                    id="homeProfileButton"
+                    class="icon-button"
+                >
+                    <i class="fa-solid fa-user"></i>
+                </button>
 
-      <form id="messageForm" class="messageDock glassPanel">
-        <button
-          type="button"
-          id="attachmentButton"
-          class="dockIconBtn"
-          onclick="document.getElementById('fileInput').click()"
-          title="Attach file">
-          📎
-        </button>
+            </div>
 
-        <input
-          id="fileInput"
-          type="file"
-          hidden
-          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip">
+            <div class="feed-container">
 
-        <input
-          id="messageInput"
-          type="text"
-          placeholder="Write your message..."
-          autocomplete="off">
+                <div class="create-post-card">
 
-        <button type="button" class="dockIconBtn" onclick="sendEmoji()" title="Emoji">😊</button>
+                    <div class="create-post-user">
 
-        <button type="submit" class="sendBtn glowEffect">
-          <span>Send</span>
-          <span class="sendArrow">➤</span>
-        </button>
-      </form>
+                        <div
+                            id="createPostAvatar"
+                            class="avatar"
+                        >
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+
+                        <textarea
+                            id="postContent"
+                            placeholder="What's happening?"
+                            maxlength="10000"
+                        ></textarea>
+
+                    </div>
+
+                    <div class="create-post-footer">
+
+                        <label
+                            for="postImage"
+                            class="attachment-button"
+                        >
+                            <i class="fa-solid fa-image"></i>
+                            <span>Photo</span>
+                        </label>
+
+                        <input
+                            type="file"
+                            id="postImage"
+                            accept="image/*"
+                            hidden
+                        >
+
+                        <button
+                            id="createPostButton"
+                            class="primary-button post-button"
+                        >
+                            Post
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="selectedPostImage"
+                        class="selected-file"
+                    ></div>
+
+                </div>
+
+                <div id="feed"></div>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="messagesPage"
+            class="page"
+        >
+
+            <div class="chat-layout">
+
+                <div class="conversation-panel">
+
+                    <div class="chat-panel-header">
+
+                        <h2>Messages</h2>
+
+                        <button
+                            id="newChatButton"
+                            class="icon-button"
+                        >
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="search-box">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            id="userSearch"
+                            type="text"
+                            placeholder="Search people"
+                        >
+
+                    </div>
+
+                    <div
+                        id="conversationList"
+                        class="conversation-list"
+                    ></div>
+
+                </div>
+
+
+                <div class="chat-panel">
+
+                    <div
+                        id="emptyChat"
+                        class="empty-chat"
+                    >
+
+                        <i class="fa-solid fa-message"></i>
+
+                        <h3>Your messages</h3>
+
+                        <p>
+                            Select a conversation to start chatting.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        id="activeChat"
+                        class="active-chat hidden"
+                    >
+
+                        <div class="chat-header">
+
+                            <div class="chat-user-info">
+
+                                <div
+                                    id="chatAvatar"
+                                    class="avatar"
+                                >
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+
+                                <div>
+
+                                    <h3 id="chatUserName">
+                                        User
+                                    </h3>
+
+                                    <span
+                                        id="chatUserStatus"
+                                    >
+                                        Offline
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <div class="chat-actions">
+
+                                <button
+                                    id="audioCallButton"
+                                    class="icon-button"
+                                >
+                                    <i class="fa-solid fa-phone"></i>
+                                </button>
+
+                                <button
+                                    id="videoCallButton"
+                                    class="icon-button"
+                                >
+                                    <i class="fa-solid fa-video"></i>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="messagesContainer"
+                            class="messages-container"
+                        ></div>
+
+
+                        <div class="message-composer">
+
+                            <label
+                                for="messageImage"
+                                class="icon-button"
+                            >
+                                <i class="fa-solid fa-paperclip"></i>
+                            </label>
+
+                            <input
+                                type="file"
+                                id="messageImage"
+                                accept="image/*"
+                                hidden
+                            >
+
+                            <input
+                                id="messageInput"
+                                type="text"
+                                placeholder="Type a message"
+                            >
+
+                            <button
+                                id="sendMessageButton"
+                                class="send-button"
+                            >
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="callsPage"
+            class="page"
+        >
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Calls</h2>
+                    <p>Your recent calls</p>
+                </div>
+
+            </div>
+
+            <div
+                id="callHistory"
+                class="call-history"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="profilePage"
+            class="page"
+        >
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Profile</h2>
+                    <p>Your account</p>
+                </div>
+
+            </div>
+
+            <div class="profile-card">
+
+                <div
+                    id="profileAvatar"
+                    class="large-avatar"
+                >
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <input
+                    type="file"
+                    id="profilePicture"
+                    accept="image/*"
+                    hidden
+                >
+
+                <label
+                    for="profilePicture"
+                    class="secondary-button"
+                >
+                    <i class="fa-solid fa-camera"></i>
+                    Change picture
+                </label>
+
+                <div class="profile-form">
+
+                    <div class="form-group">
+
+                        <label>Name</label>
+
+                        <input
+                            id="profileName"
+                            type="text"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Email</label>
+
+                        <input
+                            id="profileEmail"
+                            type="email"
+                            disabled
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>College</label>
+
+                        <input
+                            id="profileCollege"
+                            type="text"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Bio</label>
+
+                        <textarea
+                            id="profileBio"
+                            maxlength="160"
+                        ></textarea>
+
+                    </div>
+
+                    <button
+                        id="saveProfileButton"
+                        class="primary-button"
+                    >
+                        Save profile
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="settingsPage"
+            class="page"
+        >
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Settings</h2>
+                    <p>Manage your account</p>
+                </div>
+
+            </div>
+
+            <div class="settings-card">
+
+                <div class="setting-row">
+
+                    <div>
+                        <strong>Notifications</strong>
+                        <p>Receive message notifications</p>
+                    </div>
+
+                    <label class="switch">
+
+                        <input
+                            type="checkbox"
+                            id="notificationsToggle"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <div>
+                        <strong>Dark mode</strong>
+                        <p>Change the application appearance</p>
+                    </div>
+
+                    <label class="switch">
+
+                        <input
+                            type="checkbox"
+                            id="darkModeToggle"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
+                </div>
+
+                <div class="settings-section">
+
+                    <h3>Change password</h3>
+
+                    <input
+                        id="currentPassword"
+                        type="password"
+                        placeholder="Current password"
+                    >
+
+                    <input
+                        id="newPassword"
+                        type="password"
+                        placeholder="New password"
+                    >
+
+                    <button
+                        id="changePasswordButton"
+                        class="primary-button"
+                    >
+                        Change password
+                    </button>
+
+                </div>
+
+                <div class="danger-zone">
+
+                    <h3>Delete account</h3>
+
+                    <p>
+                        This permanently deletes your account.
+                    </p>
+
+                    <button
+                        id="deleteAccountButton"
+                        class="danger-button"
+                    >
+                        Delete account
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
 
     </main>
 
-    <aside id="profilePanel" class="profileDrawer glassPanel" hidden>
-      <div class="drawerHeader">
-        <h2>My Profile</h2>
-        <button type="button" class="closeDrawerBtn" onclick="closeProfile()">✕</button>
-      </div>
+</div>
 
-      <div class="drawerContent">
-        <div class="profileAvatarLarge" id="myAvatar">U</div>
-        <h3 id="profileUsername">Username</h3>
-        <p id="profileEmail" class="emailText">email@example.com</p>
 
-        <div class="drawerInputGroup">
-          <label>About / Status</label>
-          <textarea id="profileAbout" placeholder="Write something about yourself..."></textarea>
+<div
+    id="incomingCallModal"
+    class="call-modal hidden"
+>
+
+    <div class="call-modal-card">
+
+        <div class="call-modal-icon">
+            <i class="fa-solid fa-phone"></i>
         </div>
 
-        <button type="button" class="primaryBtn" onclick="saveProfile()">Save Changes</button>
-      </div>
-    </aside>
+        <h2>Incoming call</h2>
 
-  </section>
+        <p id="incomingCallerName">
+            Someone is calling you
+        </p>
 
-  <section id="callPage" class="callPage page" hidden>
-    <div class="callHeaderBar">
-      <div class="callStatusPill">
-        <span class="liveDot"></span>
-        <h2 id="callStatus">Calling...</h2>
-      </div>
-      <button type="button" class="hangupBtn" onclick="endCall()">End Call</button>
-    </div>
+        <div class="call-modal-actions">
 
-    <div class="videoViewport">
-      <video id="remoteVideo" autoplay playsinline></video>
-      <video id="localVideo" autoplay muted playsinline></video>
-    </div>
+            <button
+                id="rejectCallButton"
+                class="reject-call"
+            >
+                <i class="fa-solid fa-phone-slash"></i>
+                Reject
+            </button>
 
-    <div class="callControlsBar glassPanel">
-      <button type="button" class="callControlBtn" onclick="toggleCamera()" title="Toggle Camera">📷 Video</button>
-      <button type="button" class="callControlBtn" onclick="toggleMicrophone()" title="Toggle Mic">🎤 Mic</button>
-      <button type="button" class="callControlBtn endCallBtn" onclick="endCall()" title="Hang Up">🛑 End</button>
-    </div>
-  </section>
+            <button
+                id="acceptCallButton"
+                class="accept-call"
+            >
+                <i class="fa-solid fa-phone"></i>
+                Accept
+            </button>
 
-  <div id="incomingCall" class="callModalBackdrop" hidden>
-    <div class="incomingCallCard glassPanel glowEffect">
-      <div class="radarPing"></div>
-      <div class="incomingAvatar">📞</div>
-      <h2>Incoming Call</h2>
-      <p id="callerName" class="callerNameText">Caller</p>
-      <p id="callerType" class="callerTypeText">Video Call</p>
-
-      <div class="incomingButtonsRow">
-        <button type="button" id="acceptCall" class="callActionBtn accept">Accept</button>
-        <button type="button" id="rejectCall" class="callActionBtn reject">Decline</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="userProfileModal" class="callModalBackdrop" hidden>
-    <div class="userInfoCard glassPanel">
-      <button type="button" class="closeCardBtn" onclick="closeUserProfile()">✕</button>
-      <div class="profileAvatarLarge" id="otherAvatar">U</div>
-      <h2 id="otherUsername">Username</h2>
-      <p id="otherStatus" class="userStatusText">Offline</p>
-      <p id="otherAbout" class="userAboutText">No status available.</p>
-
-      <div class="cardActionsStack">
-        <button type="button" class="secondaryActionBtn" onclick="addContact()">＋ Add to Contacts</button>
-        <button type="button" class="secondaryActionBtn danger" onclick="blockUser()">🚫 Block User</button>
-        <div class="callActionsGroup">
-          <button type="button" class="primaryBtn" onclick="startVideoCall()">Start Video</button>
-          <button type="button" class="secondaryActionBtn" onclick="startAudioCall()">Start Audio</button>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="app.js"></script>
+    </div>
+
+</div>
+
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="/app.js"></script>
+<script src="/chat.js"></script>
+<script src="/calls.js"></script>
+<script src="/social.js"></script>
 
 </body>
 </html>

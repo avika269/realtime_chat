@@ -1,13 +1,29 @@
-import express from "express"
-import { register, login, googleLogin, getMe, updateProfile } from "../controllers/authcontroller.js"
-import { authenticate } from "../middleware/auth.js"
+import express from "express";
 
-const router = express.Router()
+import {
+    register,
+    login,
+    logout
+} from "../controllers/authController.js";
 
-router.post("/register", register)
-router.post("/login", login)
-router.post("/google", googleLogin)
-router.get("/me", authenticate, getMe)
-router.patch("/profile", authenticate, updateProfile)
+import authMiddleware from "../middleware/authMiddleware.js";
 
-export default router
+const router = express.Router();
+
+router.post(
+    "/register",
+    register
+);
+
+router.post(
+    "/login",
+    login
+);
+
+router.post(
+    "/logout",
+    authMiddleware,
+    logout
+);
+
+export default router;
