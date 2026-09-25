@@ -1,87 +1,56 @@
-import Contact from "../models/contact.js"
-import User from "../models/User.js"
+import fs from "fs"
+import path from "path"
+import multer from "multer"
 
-export const getContacts = async (
-    req,
-    res
-) => {
-    try {
-        const contacts =
-            await Contact.find({
-                owner: req.user.id
-            }).populate(
-                "contact",
-                "name email profilePicture status lastSeen"
-            )
+const uploadDir = path.join(process.cwd(), "uploads")
 
-        res.json(
-            contacts.map(item => item.contact)
-        )
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        })
-    }
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true })
 }
 
-export const searchContacts = async (
-    req,
-    res
-) => {
-    try {
-        const q =
-            req.query.q || ""
-
-        const users =
-            await User.find({
-                _id: {
-                    $ne: req.user.id
-                },
-                $or: [
-                    {
-                        name: {
-                            $regex: q,
-                            $options: "i"
-                        }
-                    },
-                    {
-                        email: {
-                            $regex: q,
-                            $options: "i"
-                        }
-                    }
-                ]
-            }).select(
-                "name email profilePicture status lastSeen"
-            )
-
-        res.json(users)
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        })
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir)
+    },
+    filename: (req, file, cb) => {
+        const name = Date.now() + "-" + file.originalname.replace(/\s+/g, "-")
+        cb(null, name)
     }
-}
+})
 
-export const getContact = async (
-    req,
-    res
-) => {
+export const upload = multer({ storage })
+
+export const uploadMedia = async (req, res) => {
     try {
-        const user =
-            await User.findById(
-                req.params.userId
-            ).select(
-                "name email profilePicture bio college status lastSeen"
-            )
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
+        if (!req.file) {
+            return res.status(400).json({
+                message: "No file uploaded"
             })
         }
 
-        res.json(user)
+        res.status(201).json({
+            message: "Media uploaded successfully",
+            filename: req.file.filename,
+            url: `/uploads/${req.file.filename}`
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+export const deleteMedia = async (req, res) => {
+    try {
+        const filePath = path.join(uploadDir, req.params.filename)
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath)
+        }
+
+        res.json({
+            message: "Media deleted successfully"
+        })
     } catch (error) {
         res.status(500).json({
             message: error.message

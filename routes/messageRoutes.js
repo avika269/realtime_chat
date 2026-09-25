@@ -8,38 +8,39 @@ import {
     markMessageSeen
 } from "../controllers/messageController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import  { authenticate } from "../middleware/auth.js";
 
 const router =
     express.Router();
 
 router.get(
     "/conversation/:conversationId",
-    authMiddleware,
+    authenticate,
     getMessages
 );
 
 router.post(
     "/",
-    authMiddleware,
+    authenticate,
     sendMessage
 );
 
 router.patch(
     "/:id",
-    authMiddleware,
+   authenticate,
+
     updateMessage
 );
 
 router.delete(
     "/:id",
-    authMiddleware,
+    authenticate,
     deleteMessage
 );
 
 router.post(
     "/:id/seen",
-    authMiddleware,
+     authenticate,
     markMessageSeen
 );
 

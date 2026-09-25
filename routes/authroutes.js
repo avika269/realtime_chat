@@ -4,9 +4,9 @@ import {
     register,
     login,
     logout
-} from "../controllers/authController.js";
+} from "../controllers/authcontroller.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post(
 
 router.post(
     "/logout",
-    authMiddleware,
+    authenticate,
     logout
 );
 

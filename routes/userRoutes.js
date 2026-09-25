@@ -11,58 +11,58 @@ import {
     getPublicProfile
 } from "../controllers/userController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import  { authenticate } from "../middleware/auth.js";
 
-import upload from "../middleware/uploadMiddleware.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
 router.get(
     "/me",
-    authMiddleware,
+     authenticate,
     getMe
 );
 
 router.get(
     "/search",
-    authMiddleware,
+     authenticate,
     searchUsers
 );
 
 router.get(
     "/profile/:id",
-    authMiddleware,
+     authenticate,
     getPublicProfile
 );
 
 router.get(
     "/:id",
-    authMiddleware,
+     authenticate,
     getUser
 );
 
 router.patch(
     "/profile",
-    authMiddleware,
+    authenticate,
     upload.single("profilePicture"),
     updateProfile
 );
 
 router.patch(
     "/settings",
-    authMiddleware,
+     authenticate,
     updateSettings
 );
 
 router.patch(
     "/password",
-    authMiddleware,
+     authenticate,
     changePassword
 );
 
 router.delete(
     "/account",
-    authMiddleware,
+     authenticate,
     deleteAccount
 );
 

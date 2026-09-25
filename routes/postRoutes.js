@@ -10,53 +10,53 @@ import {
     toggleRepost
 } from "../controllers/postController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import  { authenticate } from "../middleware/auth.js";
 
-import upload from "../middleware/uploadMiddleware.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
 router.get(
     "/",
-    authMiddleware,
+    authenticate,
     getFeed
 );
 
 router.get(
     "/:id",
-    authMiddleware,
+    authenticate,
     getPost
 );
 
 router.post(
     "/",
-    authMiddleware,
+    authenticate,
     upload.single("image"),
     createPost
 );
 
 router.patch(
     "/:id",
-    authMiddleware,
+    authenticate,
     upload.single("image"),
     updatePost
 );
 
 router.delete(
     "/:id",
-    authMiddleware,
+    authenticate,
     deletePost
 );
 
 router.post(
     "/:id/like",
-    authMiddleware,
+    authenticate,
     toggleLike
 );
 
 router.post(
     "/:id/repost",
-    authMiddleware,
+   authenticate,
     toggleRepost
 );
 

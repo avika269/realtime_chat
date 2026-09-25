@@ -7,31 +7,31 @@ import {
     deleteComment
 } from "../controllers/commentController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import {authenticate} from "../middleware/auth.js";
 
 const router = express.Router();
 
 router.get(
     "/post/:postId",
-    authMiddleware,
+    authenticate,
     getComments
 );
 
 router.post(
     "/post/:postId",
-    authMiddleware,
+    authenticate,
     createComment
 );
 
 router.patch(
     "/:id",
-    authMiddleware,
+    authenticate,
     updateComment
 );
 
 router.delete(
     "/:id",
-    authMiddleware,
+    authenticate,
     deleteComment
 );
 
