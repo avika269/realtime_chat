@@ -1,7 +1,22 @@
 import bcrypt from "bcryptjs"
+import mongoose from "mongoose"
 import User from "../models/User.js"
 import Post from "../models/Post.js"
 import Follow from "../models/Follow.js"
+
+
+const getUserId = (req) => {
+    if (req.params.id === "me") {
+        return req.user.id
+    }
+
+    return req.params.id
+}
+
+
+const isValidObjectId = (id) => {
+    return mongoose.Types.ObjectId.isValid(id)
+}
 
 
 export const getMe = async (req, res) => {
@@ -40,7 +55,15 @@ export const getMe = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id)
+        const id = getUserId(req)
+
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
+
+        const user = await User.findById(id)
             .select("-password")
 
         if (!user) {
@@ -128,7 +151,6 @@ export const updateSettings = async (req, res) => {
             user.notifications = Boolean(notifications)
         }
 
-        // Keep application in light mode
         user.darkMode = false
 
         await user.save()
@@ -248,6 +270,7 @@ export const searchUsers = async (req, res) => {
 
         const results = await Promise.all(
             users.map(async user => {
+
                 const isFollowing =
                     await Follow.exists({
                         follower: req.user.id,
@@ -288,6 +311,12 @@ export const followUser = async (req, res) => {
     try {
         const followerId = req.user.id
         const followingId = req.params.id
+
+        if (!isValidObjectId(followingId)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
 
         if (
             followerId.toString() ===
@@ -357,6 +386,12 @@ export const unfollowUser = async (req, res) => {
         const followerId = req.user.id
         const followingId = req.params.id
 
+        if (!isValidObjectId(followingId)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
+
         const follow =
             await Follow.findOneAndDelete({
                 follower: followerId,
@@ -399,9 +434,17 @@ export const unfollowUser = async (req, res) => {
 
 export const getFollowers = async (req, res) => {
     try {
+        const userId = getUserId(req)
+
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
+
         const follows =
             await Follow.find({
-                following: req.params.id
+                following: userId
             }).populate(
                 "follower",
                 "name email profilePicture bio college"
@@ -428,9 +471,17 @@ export const getFollowers = async (req, res) => {
 
 export const getFollowing = async (req, res) => {
     try {
+        const userId = getUserId(req)
+
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
+
         const follows =
             await Follow.find({
-                follower: req.params.id
+                follower: userId
             }).populate(
                 "following",
                 "name email profilePicture bio college"
@@ -489,10 +540,17 @@ export const deleteAccount = async (req, res) => {
 
 export const getPublicProfile = async (req, res) => {
     try {
+        const userId = getUserId(req)
+
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({
+                message: "Invalid user ID"
+            })
+        }
+
         const user =
-            await User.findById(
-                req.params.id
-            ).select("-password")
+            await User.findById(userId)
+                .select("-password")
 
         if (!user) {
             return res.status(404).json({
@@ -512,10 +570,10 @@ export const getPublicProfile = async (req, res) => {
 
         const posts =
             await Post.find({
-                author: user._id
+                user: user._id
             })
                 .populate(
-                    "author",
+                    "user",
                     "name email profilePicture bio"
                 )
                 .sort({

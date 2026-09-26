@@ -7,42 +7,31 @@ import {
     updateSettings,
     changePassword,
     searchUsers,
-    deleteAccount,
-    getPublicProfile,
     followUser,
     unfollowUser,
     getFollowers,
-    getFollowing
+    getFollowing,
+    deleteAccount,
+    getPublicProfile
 } from "../controllers/userController.js"
 
 import { authenticate } from "../middleware/auth.js"
-import upload from "../middleware/upload.js"
+import { upload } from "../controllers/mediaController.js"
 
 const router = express.Router()
 
-router.get(
-    "/me",
-    authenticate,
-    getMe
-)
+router.get("/me", authenticate, getMe)
 
-router.get(
-    "/search",
-    authenticate,
-    searchUsers
-)
+router.get("/search", authenticate, searchUsers)
 
-router.get(
-    "/profile/:id",
-    authenticate,
-    getPublicProfile
-)
+router.get("/me/followers", authenticate, getFollowers)
+router.get("/me/following", authenticate, getFollowing)
 
-router.get(
-    "/:id",
-    authenticate,
-    getUser
-)
+router.get("/:id/followers", authenticate, getFollowers)
+router.get("/:id/following", authenticate, getFollowing)
+
+router.get("/:id/profile", authenticate, getPublicProfile)
+router.get("/:id", authenticate, getUser)
 
 router.patch(
     "/profile",
@@ -63,12 +52,6 @@ router.patch(
     changePassword
 )
 
-router.delete(
-    "/account",
-    authenticate,
-    deleteAccount
-)
-
 router.post(
     "/:id/follow",
     authenticate,
@@ -81,16 +64,10 @@ router.delete(
     unfollowUser
 )
 
-router.get(
-    "/:id/followers",
+router.delete(
+    "/account",
     authenticate,
-    getFollowers
-)
-
-router.get(
-    "/:id/following",
-    authenticate,
-    getFollowing
+    deleteAccount
 )
 
 export default router
