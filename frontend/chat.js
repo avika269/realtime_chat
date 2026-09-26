@@ -1,438 +1,340 @@
-let conversations = [];
-
-let activeConversation =
-    null;
-
-let activeOtherUser =
-    null;
-
-let chatInitialized =
-    false;
-
+let conversations = []
+let activeConversation = null
+let activeOtherUser = null
+let chatInitialized = false
+let typingTimer = null
 
 function initializeChat() {
+    if (chatInitialized) return
+    chatInitialized = true
 
-    if (chatInitialized) {
-        return;
-    }
-
-    chatInitialized =
-        true;
-
-    const searchInput =
-        document.getElementById(
-            "chatSearch"
-        );
-
+    const searchInput = document.getElementById("chatSearch")
     if (searchInput) {
-
-        searchInput.addEventListener(
-            "input",
-            searchUsers
-        );
+        searchInput.addEventListener("input", searchUsers)
     }
 
-    const messageForm =
-        document.getElementById(
-            "messageForm"
-        );
-
+    const messageForm = document.getElementById("messageForm")
     if (messageForm) {
-
-        messageForm.addEventListener(
-            "submit",
-            sendChatMessage
-        );
+        messageForm.addEventListener("submit", sendChatMessage)
     }
 
-    const messageInput =
-        document.getElementById(
-            "messageInput"
-        );
+    const sendButton = document.getElementById("sendMessageButton")
+    if (sendButton) {
+        sendButton.addEventListener("click", sendChatMessage)
+    }
 
+    const messageInput = document.getElementById("messageInput")
     if (messageInput) {
+        messageInput.addEventListener("input", handleTyping)
 
-        messageInput.addEventListener(
-            "input",
-            handleTyping
-        );
+        messageInput.addEventListener("keydown", event => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault()
+                sendChatMessage(event)
+            }
+        })
     }
 
-    loadConversations();
+    loadConversations()
 }
-
 
 async function loadConversations() {
-
     try {
-
-        conversations =
-            await apiRequest(
-                "/chats"
-            );
-
-        renderConversations();
-
+        conversations = await apiRequest("/chats/conversations")
+        renderConversations()
     } catch (error) {
+        console.error("Load conversations error:", error)
 
-        console.error(
-            error
-        );
+        const container = document.getElementById("conversationList")
+
+        if (container) {
+            container.innerHTML = `
+                <div class="chat-error">
+                    ${escapeHtml(error.message)}
+                </div>
+            `
+        }
     }
 }
 
-
 function renderConversations() {
+    const container = document.getElementById("conversationList")
 
-    const container =
-        document.getElementById(
-            "conversationList"
-        );
+    if (!container) return
 
-    if (!container) {
-        return;
-    }
+    container.innerHTML = ""
 
-    container.innerHTML =
-        "";
-
-    if (
-        conversations.length ===
-        0
-    ) {
-
-        container.innerHTML =
-            `
+    if (!conversations.length) {
+        container.innerHTML = `
             <div class="chat-empty">
                 <i class="fa-regular fa-comments"></i>
                 <p>No conversations yet</p>
             </div>
-            `;
-
-        return;
+        `
+        return
     }
 
-    conversations.forEach(
-        conversation => {
+    conversations.forEach(conversation => {
+        const other = conversation.participants.find(user =>
+            String(user._id) !== getCurrentUserId()
+        )
 
-            const other =
-                conversation.participants.find(
-                    user =>
-                        String(
-                            user._id
-                        ) !==
-                        String(
-                            currentUser.id ||
-                            currentUser._id
-                        )
-                );
+        if (!other) return
 
-            if (!other) {
-                return;
-            }
+        const item = document.createElement("button")
 
-            const item =
-                document.createElement(
-                    "button"
-                );
+        item.type = "button"
+        item.className = "conversation-item"
 
-            item.className =
-                "conversation-item";
+        if (
+            activeConversation &&
+            String(activeConversation._id) ===
+            String(conversation._id)
+        ) {
+            item.classList.add("active")
+        }
 
-            if (
-                activeConversation &&
-                String(
-                    activeConversation._id
-                ) ===
-                String(
-                    conversation._id
-                )
-            ) {
-                item.classList.add(
-                    "active"
-                );
-            }
+        const avatar = other.profilePicture
+            ? `
+                <img
+                    src="${escapeAttribute(getMediaUrl(other.profilePicture))}"
+                    alt="Profile"
+                >
+              `
+            : `
+                <i class="fa-solid fa-user"></i>
+              `
 
-            const avatar =
-                other.profilePicture
-                    ? `
-                    <img
-                        src="${escapeAttribute(
-                            other.profilePicture
-                        )}"
-                        alt="Profile"
-                    >
-                    `
-                    : `
-                    <i class="fa-solid fa-user"></i>
-                    `;
+        const lastMessage =
+            conversation.lastMessage ||
+            "Start a conversation"
 
-            const lastMessage =
-                conversation.lastMessageText ||
-                "Start a conversation";
+        item.innerHTML = `
+            <div class="chat-avatar">
+                ${avatar}
+            </div>
 
-            item.innerHTML =
-                `
-                <div class="chat-avatar">
-                    ${avatar}
-                </div>
+            <div class="conversation-info">
 
-                <div class="conversation-info">
+                <div class="conversation-top">
 
-                    <div class="conversation-top">
+                    <strong>
+                        ${escapeHtml(other.name)}
+                    </strong>
 
-                        <strong>
-                            ${escapeHtml(
-                                other.name
-                            )}
-                        </strong>
-
-                        <span class="presence-dot ${
-                            other.status ===
-                            "online"
+                    <span
+                        class="presence-dot ${
+                            other.status === "online"
                                 ? "online"
                                 : ""
-                        }"></span>
-
-                    </div>
-
-                    <p>
-                        ${escapeHtml(
-                            lastMessage
-                        )}
-                    </p>
+                        }"
+                    ></span>
 
                 </div>
-                `;
 
-            item.addEventListener(
-                "click",
-                () =>
-                    openConversation(
-                        conversation,
-                        other
-                    )
-            );
+                <p>
+                    ${escapeHtml(lastMessage)}
+                </p>
 
-            container.appendChild(
-                item
-            );
-        }
-    );
+            </div>
+        `
+
+        item.addEventListener("click", () => {
+            openConversation(conversation, other)
+        })
+
+        container.appendChild(item)
+    })
 }
-
 
 async function openConversation(
     conversation,
     otherUser
 ) {
+    activeConversation = conversation
+    activeOtherUser = otherUser
 
-    activeConversation =
-        conversation;
-
-    activeOtherUser =
-        otherUser;
-
-    if (socket) {
-
+    if (socket && socket.connected) {
         socket.emit(
             "conversation:join",
             conversation._id
-        );
+        )
     }
 
-    renderConversations();
+    renderConversations()
 
-    updateChatHeader(
-        otherUser
-    );
+    showActiveChat()
 
-    await loadMessages(
-        conversation._id
-    );
+    updateChatHeader(otherUser)
+
+    await loadMessages(conversation._id)
 }
 
+function showActiveChat() {
+    const emptyChat =
+        document.getElementById("emptyChat")
 
-function updateChatHeader(
-    user
-) {
+    const activeChat =
+        document.getElementById("activeChat")
 
+    if (emptyChat) {
+        emptyChat.classList.add("hidden")
+    }
+
+    if (activeChat) {
+        activeChat.classList.remove("hidden")
+    }
+}
+
+function updateChatHeader(user) {
     const name =
-        document.getElementById(
-            "chatUserName"
-        );
+        document.getElementById("chatUserName")
 
     const status =
-        document.getElementById(
-            "chatUserStatus"
-        );
+        document.getElementById("chatUserStatus")
 
     const avatar =
-        document.getElementById(
-            "chatUserAvatar"
-        );
+        document.getElementById("chatAvatar") ||
+        document.getElementById("chatUserAvatar")
 
     if (name) {
-        name.textContent =
-            user.name;
+        name.textContent = user.name || "User"
     }
 
     if (status) {
-
-        status.textContent =
-            user.status ===
-            "online"
-                ? "online"
-                : formatLastSeen(
-                    user.lastSeen
-                );
+        if (user.status === "online") {
+            status.textContent = "online"
+        } else {
+            status.textContent =
+                formatLastSeen(user.lastSeen)
+        }
     }
 
     if (avatar) {
-
-        avatar.innerHTML =
-            user.profilePicture
-                ? `
-                    <img
-                        src="${escapeAttribute(
-                            user.profilePicture
-                        )}"
-                        alt="Profile"
-                    >
-                  `
-                : `
-                    <i class="fa-solid fa-user"></i>
-                  `;
+        if (user.profilePicture) {
+            avatar.innerHTML = `
+                <img
+                    src="${escapeAttribute(
+                        getMediaUrl(user.profilePicture)
+                    )}"
+                    alt="Profile"
+                >
+            `
+        } else {
+            avatar.innerHTML =
+                `<i class="fa-solid fa-user"></i>`
+        }
     }
 }
 
-
-async function loadMessages(
-    conversationId
-) {
-
+async function loadMessages(conversationId) {
     const container =
-        document.getElementById(
-            "messagesContainer"
-        );
+        document.getElementById("messagesContainer")
 
-    if (!container) {
-        return;
-    }
+    if (!container) return
 
-    container.innerHTML =
-        `
+    container.innerHTML = `
         <div class="chat-loading">
             Loading messages...
         </div>
-        `;
+    `
 
     try {
-
         const messages =
             await apiRequest(
                 `/messages/conversation/${conversationId}`
-            );
+            )
 
-        container.innerHTML =
-            "";
+        container.innerHTML = ""
 
-        messages.forEach(
-            message => {
+        if (!messages.length) {
+            container.innerHTML = `
+                <div class="chat-empty">
+                    <i class="fa-regular fa-message"></i>
+                    <p>No messages yet</p>
+                    <span>Send a message to start the conversation.</span>
+                </div>
+            `
+            return
+        }
 
-                container.appendChild(
-                    createMessageElement(
-                        message
-                    )
-                );
-            }
-        );
+        messages.forEach(message => {
+            container.appendChild(
+                createMessageElement(message)
+            )
+        })
 
-        scrollMessagesToBottom();
+        scrollMessagesToBottom()
 
     } catch (error) {
+        console.error(
+            "Load messages error:",
+            error
+        )
 
-        container.innerHTML =
-            `
+        container.innerHTML = `
             <div class="chat-error">
-                ${escapeHtml(
-                    error.message
-                )}
+                ${escapeHtml(error.message)}
             </div>
-            `;
+        `
     }
 }
 
-
-function createMessageElement(
-    message
-) {
-
+function createMessageElement(message) {
     const element =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div")
 
     const senderId =
         String(
             message.sender?._id ||
             message.sender
-        );
+        )
 
     const myId =
-        String(
-            currentUser.id ||
-            currentUser._id
-        );
+        getCurrentUserId()
 
     const mine =
-        senderId ===
-        myId;
+        senderId === myId
 
     element.className =
         `message ${
             mine
                 ? "message-mine"
                 : "message-other"
-        }`;
+        }`
 
     element.dataset.messageId =
-        message._id;
+        message._id
 
-    if (
-        message.deleted
-    ) {
-
-        element.innerHTML =
-            `
+    if (message.deleted) {
+        element.innerHTML = `
             <div class="message-bubble deleted-message">
                 <i class="fa-solid fa-ban"></i>
                 Message deleted
             </div>
-            `;
+        `
 
-        return element;
+        return element
     }
 
     const time =
-        new Date(
-            message.createdAt
-        ).toLocaleTimeString(
-            [],
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
+        message.createdAt
+            ? new Date(
+                message.createdAt
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            )
+            : ""
 
-    element.innerHTML =
-        `
+    element.innerHTML = `
         <div class="message-bubble">
 
             <div class="message-text">
-                ${escapeHtml(
-                    message.text
-                )}
+                ${escapeHtml(message.text || "")}
             </div>
 
             <div class="message-meta">
@@ -443,25 +345,21 @@ function createMessageElement(
 
                 ${
                     message.edited
-                        ? `
-                        <span>
-                            edited
-                        </span>
-                        `
+                        ? `<span>edited</span>`
                         : ""
                 }
 
                 ${
                     mine
                         ? `
-                        <span class="message-seen">
-                            ${
-                                message.seen
-                                    ? "✓✓"
-                                    : "✓"
-                            }
-                        </span>
-                        `
+                            <span class="message-seen">
+                                ${
+                                    message.seen
+                                        ? "✓✓"
+                                        : "✓"
+                                }
+                            </span>
+                          `
                         : ""
                 }
 
@@ -470,386 +368,413 @@ function createMessageElement(
             ${
                 mine
                     ? `
-                    <div class="message-actions">
+                        <div class="message-actions">
 
-                        <button
-                            class="edit-message"
-                            title="Edit"
-                        >
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                            <button
+                                type="button"
+                                class="edit-message"
+                                title="Edit"
+                            >
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
 
-                        <button
-                            class="delete-message"
-                            title="Delete"
-                        >
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                            <button
+                                type="button"
+                                class="delete-message"
+                                title="Delete"
+                            >
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
 
-                    </div>
-                    `
+                        </div>
+                      `
                     : ""
             }
 
         </div>
-        `;
+    `
 
     const editButton =
         element.querySelector(
             ".edit-message"
-        );
+        )
 
     if (editButton) {
-
         editButton.addEventListener(
             "click",
-            () =>
-                editMessage(
-                    message
-                )
-        );
+            () => editMessage(message)
+        )
     }
 
     const deleteButton =
         element.querySelector(
             ".delete-message"
-        );
+        )
 
     if (deleteButton) {
-
         deleteButton.addEventListener(
             "click",
-            () =>
-                deleteChatMessage(
-                    message._id
-                )
-        );
+            () => deleteChatMessage(
+                message._id
+            )
+        )
     }
 
-    return element;
+    return element
 }
 
-
-async function sendChatMessage(
-    event
-) {
-
-    event.preventDefault();
+async function sendChatMessage(event) {
+    if (event) {
+        event.preventDefault()
+    }
 
     if (
         !activeConversation ||
         !activeOtherUser
     ) {
-
         showToast(
             "Select a conversation first"
-        );
-
-        return;
+        )
+        return
     }
 
     const input =
         document.getElementById(
             "messageInput"
-        );
+        )
+
+    if (!input) return
 
     const text =
-        input.value.trim();
+        input.value.trim()
 
-    if (!text) {
-        return;
+    if (!text) return
+
+    const payload = {
+        conversationId:
+            activeConversation._id,
+
+        receiverId:
+            activeOtherUser._id,
+
+        text
     }
+
+    input.value = ""
+
+    stopTyping()
 
     if (
         socket &&
         socket.connected
     ) {
-
         socket.emit(
             "message:send",
-            {
-                conversationId:
-                    activeConversation._id,
+            payload
+        )
 
-                receiverId:
-                    activeOtherUser._id,
-
-                text
-            }
-        );
-
-    } else {
-
-        try {
-
-            const result =
-                await apiRequest(
-                    "/messages",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-                        body:
-                            JSON.stringify({
-                                conversationId:
-                                    activeConversation._id,
-
-                                receiverId:
-                                    activeOtherUser._id,
-
-                                text
-                            })
-                    }
-                );
-
-            handleIncomingMessage(
-                result.message
-            );
-
-        } catch (error) {
-
-            showToast(
-                error.message
-            );
-        }
+        return
     }
 
-    input.value =
-        "";
+    try {
+        const result =
+            await apiRequest(
+                "/messages",
+                {
+                    method: "POST",
 
-    stopTyping();
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(payload)
+                }
+            )
+
+        if (result.message) {
+            handleIncomingMessage(
+                result.message
+            )
+        }
+
+    } catch (error) {
+        console.error(
+            "Send message error:",
+            error
+        )
+
+        showToast(error.message)
+
+        input.value = text
+    }
 }
 
-
-function handleIncomingMessage(
-    message
-) {
+function handleIncomingMessage(message) {
+    if (!message) return
 
     const conversationId =
         String(
             message.conversation?._id ||
             message.conversation
-        );
+        )
 
-    if (
+    const isActiveConversation =
         activeConversation &&
         String(
             activeConversation._id
-        ) ===
-        conversationId
-    ) {
+        ) === conversationId
 
+    if (isActiveConversation) {
         const container =
             document.getElementById(
                 "messagesContainer"
-            );
+            )
 
         if (container) {
 
-            container.appendChild(
-                createMessageElement(
-                    message
+            const emptyMessage =
+                container.querySelector(
+                    ".chat-empty"
                 )
-            );
 
-            scrollMessagesToBottom();
+            if (emptyMessage) {
+                container.innerHTML = ""
+            }
+
+            const existing =
+                container.querySelector(
+                    `[data-message-id="${message._id}"]`
+                )
+
+            if (!existing) {
+                container.appendChild(
+                    createMessageElement(
+                        message
+                    )
+                )
+            }
+
+            scrollMessagesToBottom()
         }
 
-        if (
+        const receiverId =
             String(
                 message.receiver?._id ||
                 message.receiver
-            ) ===
-            String(
-                currentUser.id ||
-                currentUser._id
             )
+
+        if (
+            receiverId ===
+            getCurrentUserId()
         ) {
-
-            if (socket) {
-
-                socket.emit(
-                    "message:seen",
-                    {
-                        messageId:
-                            message._id
-                    }
-                );
-            }
+            markMessageSeen(message._id)
         }
     }
 
-    loadConversations();
+    loadConversations()
 }
 
-
-async function searchUsers(
-    event
+async function markMessageSeen(
+    messageId
 ) {
+    try {
+        await apiRequest(
+            `/messages/${messageId}/seen`,
+            {
+                method: "POST"
+            }
+        )
 
+        if (socket) {
+            socket.emit(
+                "message:seen",
+                {
+                    messageId
+                }
+            )
+        }
+
+    } catch (error) {
+        console.error(
+            "Mark seen error:",
+            error
+        )
+    }
+}
+
+async function searchUsers(event) {
     const query =
-        event.target.value.trim();
+        event.target.value.trim()
 
     const results =
         document.getElementById(
             "userSearchResults"
-        );
+        )
 
-    if (!results) {
-        return;
-    }
+    if (!results) return
 
     if (!query) {
-
-        results.innerHTML =
-            "";
-
-        return;
+        results.innerHTML = ""
+        return
     }
 
     try {
-
         const users =
             await apiRequest(
                 `/users/search?q=${encodeURIComponent(
                     query
                 )}`
-            );
+            )
 
-        results.innerHTML =
-            "";
+        results.innerHTML = ""
 
-        users.forEach(
-            user => {
+        if (!users.length) {
+            results.innerHTML = `
+                <div class="search-empty">
+                    No users found
+                </div>
+            `
+            return
+        }
 
-                const item =
-                    document.createElement(
-                        "button"
-                    );
+        users.forEach(user => {
 
-                item.className =
-                    "user-search-item";
-
-                item.innerHTML =
-                    `
-                    <div class="chat-avatar">
-                        ${
-                            user.profilePicture
-                                ? `
-                                <img
-                                    src="${escapeAttribute(
-                                        user.profilePicture
-                                    )}"
-                                    alt="Profile"
-                                >
-                                `
-                                : `
-                                <i class="fa-solid fa-user"></i>
-                                `
-                        }
-                    </div>
-
-                    <div>
-                        <strong>
-                            ${escapeHtml(
-                                user.name
-                            )}
-                        </strong>
-
-                        <span>
-                            ${escapeHtml(
-                                user.email
-                            )}
-                        </span>
-                    </div>
-                    `;
-
-                item.addEventListener(
-                    "click",
-                    () =>
-                        startConversation(
-                            user
-                        )
-                );
-
-                results.appendChild(
-                    item
-                );
+            if (
+                String(user._id) ===
+                getCurrentUserId()
+            ) {
+                return
             }
-        );
+
+            const item =
+                document.createElement("button")
+
+            item.type = "button"
+
+            item.className =
+                "user-search-item"
+
+            const avatar =
+                user.profilePicture
+                    ? `
+                        <img
+                            src="${escapeAttribute(
+                                getMediaUrl(
+                                    user.profilePicture
+                                )
+                            )}"
+                            alt="Profile"
+                        >
+                      `
+                    : `
+                        <i class="fa-solid fa-user"></i>
+                      `
+
+            item.innerHTML = `
+                <div class="chat-avatar">
+                    ${avatar}
+                </div>
+
+                <div>
+                    <strong>
+                        ${escapeHtml(user.name)}
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(user.email)}
+                    </span>
+                </div>
+            `
+
+            item.addEventListener(
+                "click",
+                () => startConversation(user)
+            )
+
+            results.appendChild(item)
+        })
 
     } catch (error) {
+        console.error(
+            "User search error:",
+            error
+        )
 
-        results.innerHTML =
-            `
-            <p>
-                ${escapeHtml(
-                    error.message
-                )}
-            </p>
-            `;
+        results.innerHTML = `
+            <div class="search-error">
+                ${escapeHtml(error.message)}
+            </div>
+        `
     }
 }
 
-
-async function startConversation(
-    user
-) {
-
+async function startConversation(user) {
     try {
 
         const conversation =
             await apiRequest(
-                "/chats",
+                `/chats/conversations/${user._id}`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type":
                             "application/json"
-                    },
-                    body:
-                        JSON.stringify({
-                            userId:
-                                user._id
-                        })
+                    }
                 }
-            );
+            )
 
-        document.getElementById(
-            "chatSearch"
-        ).value =
-            "";
+        const searchInput =
+            document.getElementById(
+                "chatSearch"
+            )
 
-        document.getElementById(
-            "userSearchResults"
-        ).innerHTML =
-            "";
+        if (searchInput) {
+            searchInput.value = ""
+        }
 
-        await loadConversations();
+        const results =
+            document.getElementById(
+                "userSearchResults"
+            )
+
+        if (results) {
+            results.innerHTML = ""
+        }
+
+        await loadConversations()
+
+        const loadedConversation =
+            conversations.find(
+                item =>
+                    String(item._id) ===
+                    String(conversation._id)
+            )
 
         await openConversation(
+            loadedConversation ||
             conversation,
             user
-        );
+        )
 
     } catch (error) {
+        console.error(
+            "Start conversation error:",
+            error
+        )
 
-        showToast(
-            error.message
-        );
+        showToast(error.message)
     }
 }
 
-
 function handleTyping() {
-
     if (
         !activeConversation ||
-        !socket
+        !socket ||
+        !socket.connected
     ) {
-        return;
+        return
     }
 
     socket.emit(
@@ -858,27 +783,26 @@ function handleTyping() {
             conversationId:
                 activeConversation._id
         }
-    );
+    )
 
-    clearTimeout(
-        window.typingTimer
-    );
+    clearTimeout(typingTimer)
 
-    window.typingTimer =
+    typingTimer =
         setTimeout(
             stopTyping,
             800
-        );
+        )
 }
 
-
 function stopTyping() {
+    clearTimeout(typingTimer)
 
     if (
         !activeConversation ||
-        !socket
+        !socket ||
+        !socket.connected
     ) {
-        return;
+        return
     }
 
     socket.emit(
@@ -887,14 +811,10 @@ function stopTyping() {
             conversationId:
                 activeConversation._id
         }
-    );
+    )
 }
 
-
-function handleTypingStart(
-    data
-) {
-
+function handleTypingStart(data) {
     if (
         !activeConversation ||
         String(
@@ -904,153 +824,150 @@ function handleTypingStart(
             activeConversation._id
         )
     ) {
-        return;
+        return
     }
 
     const status =
         document.getElementById(
             "chatUserStatus"
-        );
+        )
 
     if (status) {
         status.textContent =
-            "typing...";
+            "typing..."
     }
 }
 
-
-function handleTypingStop(
-    data
-) {
-
+function handleTypingStop(data) {
     if (
         !activeOtherUser
     ) {
-        return;
+        return
     }
 
     updateChatHeader(
         activeOtherUser
-    );
+    )
 }
 
-
-function handleMessageSeen(
-    data
-) {
+function handleMessageSeen(data) {
+    if (!data) return
 
     const element =
         document.querySelector(
             `[data-message-id="${data.messageId}"]`
-        );
+        )
 
-    if (!element) {
-        return;
-    }
+    if (!element) return
 
     const seen =
         element.querySelector(
             ".message-seen"
-        );
+        )
 
     if (seen) {
-        seen.textContent =
-            "✓✓";
+        seen.textContent = "✓✓"
     }
 }
 
-
-function handleMessageEdited(
-    data
-) {
+function handleMessageEdited(data) {
+    if (!data) return
 
     const element =
         document.querySelector(
             `[data-message-id="${data.messageId}"]`
-        );
+        )
 
-    if (!element) {
-        return;
-    }
+    if (!element) return
 
     const text =
         element.querySelector(
             ".message-text"
-        );
+        )
 
     if (text) {
         text.textContent =
-            data.text;
+            data.text || ""
+    }
+
+    const meta =
+        element.querySelector(
+            ".message-meta"
+        )
+
+    if (
+        meta &&
+        !meta.textContent.includes("edited")
+    ) {
+        const edited =
+            document.createElement("span")
+
+        edited.textContent =
+            "edited"
+
+        meta.insertBefore(
+            edited,
+            meta.children[1] || null
+        )
     }
 }
 
-
-function handleMessageDeleted(
-    data
-) {
+function handleMessageDeleted(data) {
+    if (!data) return
 
     const element =
         document.querySelector(
             `[data-message-id="${data.messageId}"]`
-        );
+        )
 
-    if (!element) {
-        return;
-    }
+    if (!element) return
 
-    element.innerHTML =
-        `
+    element.innerHTML = `
         <div class="message-bubble deleted-message">
             <i class="fa-solid fa-ban"></i>
             Message deleted
         </div>
-        `;
+    `
 }
 
-
-async function editMessage(
-    message
-) {
-
+async function editMessage(message) {
     const text =
         window.prompt(
             "Edit message",
-            message.text
-        );
+            message.text || ""
+        )
 
-    if (
-        text === null
-    ) {
-        return;
-    }
+    if (text === null) return
 
     const newText =
-        text.trim();
+        text.trim()
 
-    if (!newText) {
-        return;
-    }
+    if (!newText) return
 
     try {
 
-        await apiRequest(
-            `/messages/${message._id}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-                body:
-                    JSON.stringify({
-                        text:
-                            newText
-                    })
-            }
-        );
+        const result =
+            await apiRequest(
+                `/messages/${message._id}`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            text: newText
+                        })
+                }
+            )
+
+        const updatedMessage =
+            result.message
 
         if (socket) {
-
             socket.emit(
                 "message:edit",
                 {
@@ -1060,30 +977,37 @@ async function editMessage(
                     text:
                         newText
                 }
-            );
+            )
         }
 
-    } catch (error) {
+        handleMessageEdited({
+            messageId:
+                message._id,
 
-        showToast(
-            error.message
-        );
+            text:
+                updatedMessage?.text ||
+                newText
+        })
+
+    } catch (error) {
+        console.error(
+            "Edit message error:",
+            error
+        )
+
+        showToast(error.message)
     }
 }
-
 
 async function deleteChatMessage(
     messageId
 ) {
-
     const confirmed =
         window.confirm(
             "Delete this message?"
-        );
+        )
 
-    if (!confirmed) {
-        return;
-    }
+    if (!confirmed) return
 
     try {
 
@@ -1092,34 +1016,33 @@ async function deleteChatMessage(
             {
                 method: "DELETE"
             }
-        );
+        )
 
         if (socket) {
-
             socket.emit(
                 "message:delete",
                 {
                     messageId
                 }
-            );
+            )
         }
 
         handleMessageDeleted({
             messageId
-        });
+        })
 
     } catch (error) {
+        console.error(
+            "Delete message error:",
+            error
+        )
 
-        showToast(
-            error.message
-        );
+        showToast(error.message)
     }
 }
 
-
-function handlePresenceUpdate(
-    data
-) {
+function handlePresenceUpdate(data) {
+    if (!data) return
 
     conversations.forEach(
         conversation => {
@@ -1128,125 +1051,114 @@ function handlePresenceUpdate(
                 user => {
 
                     if (
-                        String(
-                            user._id
-                        ) ===
-                        String(
-                            data.userId
-                        )
+                        String(user._id) ===
+                        String(data.userId)
                     ) {
-
                         user.status =
-                            data.status;
+                            data.status
 
                         if (
                             data.lastSeen
                         ) {
                             user.lastSeen =
-                                data.lastSeen;
+                                data.lastSeen
                         }
                     }
                 }
-            );
+            )
         }
-    );
+    )
 
-    renderConversations();
+    renderConversations()
 
     if (
         activeOtherUser &&
         String(
             activeOtherUser._id
         ) ===
-        String(
-            data.userId
-        )
+        String(data.userId)
     ) {
-
         activeOtherUser.status =
-            data.status;
+            data.status
 
         activeOtherUser.lastSeen =
-            data.lastSeen;
+            data.lastSeen
 
         updateChatHeader(
             activeOtherUser
-        );
+        )
     }
 }
 
-
-function formatLastSeen(
-    date
-) {
-
+function formatLastSeen(date) {
     if (!date) {
-        return "offline";
+        return "offline"
     }
 
-    return `last seen ${new Date(
-        date
-    ).toLocaleString(
-        [],
-        {
-            dateStyle: "short",
-            timeStyle: "short"
+    return `
+        last seen ${
+            new Date(date).toLocaleString(
+                [],
+                {
+                    dateStyle: "short",
+                    timeStyle: "short"
+                }
+            )
         }
-    )}`;
+    `
 }
-
 
 function scrollMessagesToBottom() {
-
     const container =
         document.getElementById(
             "messagesContainer"
-        );
+        )
 
-    if (!container) {
-        return;
-    }
+    if (!container) return
 
     container.scrollTop =
-        container.scrollHeight;
+        container.scrollHeight
 }
 
-
-function escapeHtml(
-    value
-) {
+function getCurrentUserId() {
+    if (!currentUser) {
+        return ""
+    }
 
     return String(
-        value ?? ""
+        currentUser.id ||
+        currentUser._id ||
+        ""
     )
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
 }
 
+function getMediaUrl(url) {
+    if (!url) return ""
 
-function escapeAttribute(
-    value
-) {
+    if (
+        url.startsWith("http://") ||
+        url.startsWith("https://") ||
+        url.startsWith("data:")
+    ) {
+        return url
+    }
 
-    return escapeHtml(
-        value
-    );
+    if (url.startsWith("/")) {
+        return url
+    }
+
+    return `/${url}`
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value)
 }

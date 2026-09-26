@@ -1,4 +1,4 @@
-import express from "express";
+import express from "express"
 
 import {
     getMe,
@@ -8,62 +8,89 @@ import {
     changePassword,
     searchUsers,
     deleteAccount,
-    getPublicProfile
-} from "../controllers/userController.js";
+    getPublicProfile,
+    followUser,
+    unfollowUser,
+    getFollowers,
+    getFollowing
+} from "../controllers/userController.js"
 
-import  { authenticate } from "../middleware/auth.js";
+import { authenticate } from "../middleware/auth.js"
+import upload from "../middleware/upload.js"
 
-import upload from "../middleware/upload.js";
-
-const router = express.Router();
+const router = express.Router()
 
 router.get(
     "/me",
-     authenticate,
+    authenticate,
     getMe
-);
+)
 
 router.get(
     "/search",
-     authenticate,
+    authenticate,
     searchUsers
-);
+)
 
 router.get(
     "/profile/:id",
-     authenticate,
+    authenticate,
     getPublicProfile
-);
+)
 
 router.get(
     "/:id",
-     authenticate,
+    authenticate,
     getUser
-);
+)
 
 router.patch(
     "/profile",
     authenticate,
     upload.single("profilePicture"),
     updateProfile
-);
+)
 
 router.patch(
     "/settings",
-     authenticate,
+    authenticate,
     updateSettings
-);
+)
 
 router.patch(
     "/password",
-     authenticate,
+    authenticate,
     changePassword
-);
+)
 
 router.delete(
     "/account",
-     authenticate,
+    authenticate,
     deleteAccount
-);
+)
 
-export default router;
+router.post(
+    "/:id/follow",
+    authenticate,
+    followUser
+)
+
+router.delete(
+    "/:id/follow",
+    authenticate,
+    unfollowUser
+)
+
+router.get(
+    "/:id/followers",
+    authenticate,
+    getFollowers
+)
+
+router.get(
+    "/:id/following",
+    authenticate,
+    getFollowing
+)
+
+export default router

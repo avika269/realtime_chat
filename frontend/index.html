@@ -42,18 +42,12 @@
 
     <div class="auth-overlay"></div>
 
-
     <div class="auth-container">
-
-
-        <!-- BRAND -->
 
         <div class="auth-brand">
 
             <div class="brand-icon">
-
                 <i class="fa-solid fa-graduation-cap"></i>
-
             </div>
 
             <h1>
@@ -67,12 +61,7 @@
         </div>
 
 
-        <!-- AUTH CARD -->
-
         <div class="auth-card">
-
-
-            <!-- LOGIN / SIGN UP TABS -->
 
             <div class="auth-tabs">
 
@@ -83,7 +72,6 @@
                 >
                     Login
                 </button>
-
 
                 <button
                     type="button"
@@ -96,12 +84,9 @@
             </div>
 
 
-            <!-- =================================================
-                 LOGIN FORM
-            ================================================= -->
+            <!-- LOGIN -->
 
             <form id="loginForm">
-
 
                 <div class="form-group">
 
@@ -149,9 +134,7 @@
                             class="password-toggle"
                             data-target="loginPassword"
                         >
-
                             <i class="fa-regular fa-eye"></i>
-
                         </button>
 
                     </div>
@@ -169,15 +152,12 @@
             </form>
 
 
-            <!-- =================================================
-                 REGISTER FORM
-            ================================================= -->
+            <!-- REGISTER -->
 
             <form
                 id="registerForm"
                 class="hidden"
             >
-
 
                 <div class="form-group">
 
@@ -269,9 +249,7 @@
                             class="password-toggle"
                             data-target="registerPassword"
                         >
-
                             <i class="fa-regular fa-eye"></i>
-
                         </button>
 
                     </div>
@@ -289,17 +267,11 @@
             </form>
 
 
-            <!-- AUTH MESSAGE -->
-
             <div
                 id="authMessage"
                 class="auth-message"
             ></div>
 
-
-            <!-- =================================================
-                 GOOGLE LOGIN
-            ================================================= -->
 
             <div class="or-divider">
 
@@ -345,11 +317,10 @@
 
 
     <!-- =================================================
-         SIDEBAR
+         LEFT SIDEBAR
     ================================================= -->
 
     <aside class="sidebar">
-
 
         <div class="sidebar-brand">
 
@@ -368,17 +339,13 @@
 
         <nav class="main-navigation">
 
-
             <button
                 type="button"
                 class="nav-item active"
                 data-page="home"
             >
-
                 <i class="fa-solid fa-house"></i>
-
                 <span>Home</span>
-
             </button>
 
 
@@ -387,11 +354,8 @@
                 class="nav-item"
                 data-page="messages"
             >
-
                 <i class="fa-solid fa-message"></i>
-
                 <span>Messages</span>
-
             </button>
 
 
@@ -400,11 +364,8 @@
                 class="nav-item"
                 data-page="calls"
             >
-
                 <i class="fa-solid fa-phone"></i>
-
                 <span>Calls</span>
-
             </button>
 
 
@@ -413,11 +374,8 @@
                 class="nav-item"
                 data-page="profile"
             >
-
                 <i class="fa-solid fa-user"></i>
-
                 <span>Profile</span>
-
             </button>
 
 
@@ -426,11 +384,8 @@
                 class="nav-item"
                 data-page="settings"
             >
-
                 <i class="fa-solid fa-gear"></i>
-
                 <span>Settings</span>
-
             </button>
 
         </nav>
@@ -441,11 +396,8 @@
             id="logoutButton"
             class="logout-button"
         >
-
             <i class="fa-solid fa-right-from-bracket"></i>
-
             <span>Logout</span>
-
         </button>
 
     </aside>
@@ -468,114 +420,482 @@
             class="page active-page"
         >
 
-
-            <div class="page-header">
-
-                <div>
-
-                    <span class="page-kicker">
-                        CAMPUS COMMUNITY
-                    </span>
-
-                    <h2>
-                        Home
-                    </h2>
-
-                    <p>
-                        What's happening around campus?
-                    </p>
-
-                </div>
+            <div class="home-layout">
 
 
-                <button
-                    type="button"
-                    id="homeProfileButton"
-                    class="icon-button"
-                >
+                <!-- =================================================
+                     FEED
+                ================================================= -->
 
-                    <i class="fa-regular fa-user"></i>
-
-                </button>
-
-            </div>
+                <div class="home-main">
 
 
-            <div class="feed-container">
+                    <!-- HEADER -->
 
+                    <div class="home-top-header">
 
-                <!-- CREATE POST -->
+                        <div>
 
-                <div class="create-post-card">
+                            <span class="page-kicker">
+                                CAMPUS COMMUNITY
+                            </span>
 
-
-                    <div class="create-post-user">
-
-
-                        <div
-                            id="createPostAvatar"
-                            class="avatar"
-                        >
-
-                            <i class="fa-regular fa-user"></i>
+                            <h2>
+                                Home
+                            </h2>
 
                         </div>
 
 
-                        <textarea
-                            id="postContent"
-                            placeholder="What's happening?"
-                            maxlength="10000"
-                        ></textarea>
+                        <div class="home-header-actions">
+
+
+                            <!-- NOTIFICATIONS -->
+
+                            <button
+                                type="button"
+                                id="notificationButton"
+                                class="top-icon-button"
+                                title="Notifications"
+                            >
+
+                                <i class="fa-regular fa-bell"></i>
+
+                                <span
+                                    id="notificationBadge"
+                                    class="notification-badge hidden"
+                                >
+                                    0
+                                </span>
+
+                            </button>
+
+
+                            <!-- PROFILE -->
+
+                            <button
+                                type="button"
+                                id="homeProfileButton"
+                                class="top-icon-button"
+                                title="Profile"
+                            >
+
+                                <i class="fa-regular fa-user"></i>
+
+                            </button>
+
+                        </div>
 
                     </div>
 
 
-                    <div
-                        id="selectedPostImage"
-                        class="selected-file"
-                    ></div>
+                    <!-- FEED TABS -->
 
+                    <div class="feed-tabs">
 
-                    <div class="create-post-footer">
-
-
-                        <label
-                            for="postImage"
-                            class="attachment-button"
+                        <button
+                            type="button"
+                            class="feed-tab active"
+                            id="forYouTab"
                         >
-
-                            <i class="fa-regular fa-image"></i>
-
-                            <span>
-                                Photo
-                            </span>
-
-                        </label>
-
-
-                        <input
-                            type="file"
-                            id="postImage"
-                            accept="image/*"
-                            hidden
-                        >
+                            For you
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
 
 
                         <button
                             type="button"
-                            id="createPostButton"
-                            class="primary-button post-button"
+                            class="feed-tab"
+                            id="followingTab"
                         >
-                            Post
+                            Following
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="feed-tab add-feed-tab"
+                            id="addUserTopButton"
+                        >
+                            Add
+                            <i class="fa-solid fa-plus"></i>
+
+                            <span class="tab-dot"></span>
+
                         </button>
 
                     </div>
 
+
+                    <!-- NOTIFICATION PANEL -->
+
+                    <div
+                        id="notificationPanel"
+                        class="notification-panel hidden"
+                    >
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Notifications
+                            </h3>
+
+                            <button
+                                type="button"
+                                id="closeNotificationButton"
+                                class="close-panel-button"
+                            >
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            id="notificationList"
+                            class="notification-list"
+                        >
+
+                            <div class="empty-notification">
+
+                                <i class="fa-regular fa-bell"></i>
+
+                                <p>
+                                    No new notifications
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- CREATE POST -->
+
+                    <div class="create-post-card">
+
+
+                        <div class="create-post-user">
+
+
+                            <div
+                                id="createPostAvatar"
+                                class="avatar"
+                            >
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+
+
+                            <textarea
+                                id="postContent"
+                                placeholder="What's happening?"
+                                maxlength="10000"
+                            ></textarea>
+
+                        </div>
+
+
+                        <!-- SELECTED IMAGE -->
+
+                        <div
+                            id="selectedPostImage"
+                            class="selected-file"
+                        ></div>
+
+
+                        <div class="create-post-footer">
+
+
+                            <label
+                                for="postImage"
+                                class="attachment-button"
+                            >
+
+                                <i class="fa-regular fa-image"></i>
+
+                                <span>
+                                    Photo
+                                </span>
+
+                            </label>
+
+
+                            <input
+                                type="file"
+                                id="postImage"
+                                accept="image/*"
+                                hidden
+                            >
+
+
+                            <div class="post-footer-right">
+
+                                <span
+                                    id="postCharacterCount"
+                                    class="character-count"
+                                >
+                                    0/10000
+                                </span>
+
+
+                                <button
+                                    type="button"
+                                    id="createPostButton"
+                                    class="primary-button post-button"
+                                >
+
+                                    <i class="fa-solid fa-paper-plane"></i>
+
+                                    Post
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- FEED -->
+
+                    <div
+                        id="feed"
+                        class="feed"
+                    ></div>
+
+
                 </div>
 
 
-                <div id="feed"></div>
+
+                <!-- =================================================
+                     RIGHT SIDEBAR
+                ================================================= -->
+
+                <aside class="right-sidebar">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="right-search">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            type="text"
+                            id="userSearchInput"
+                            placeholder="Search people"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <!-- SEARCH RESULTS -->
+
+                    <div
+                        id="userSearchResults"
+                        class="right-search-results hidden"
+                    ></div>
+
+
+                    <!-- CONNECT CARD -->
+
+                    <div class="connect-card">
+
+                        <div class="connect-card-header">
+
+                            <div>
+
+                                <span class="panel-kicker">
+                                    CONNECT
+                                </span>
+
+                                <h3>
+                                    Find people
+                                </h3>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                id="addUserButton"
+                                class="add-user-button"
+                            >
+                                <i class="fa-solid fa-user-plus"></i>
+                                Add +
+                            </button>
+
+                        </div>
+
+
+                        <!-- FOLLOWERS -->
+
+                        <div class="social-stat-row">
+
+
+                            <div class="social-stat-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+
+
+                            <div class="social-stat-text">
+
+                                <span>
+                                    Followers
+                                </span>
+
+                                <strong id="followerCount">
+                                    0
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- FOLLOWING -->
+
+                        <div class="social-stat-row">
+
+
+                            <div class="social-stat-icon">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+
+
+                            <div class="social-stat-text">
+
+                                <span>
+                                    Following
+                                </span>
+
+                                <strong id="followingCount">
+                                    0
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- ADD USER PANEL -->
+
+                    <div
+                        id="addUserPanel"
+                        class="add-user-panel hidden"
+                    >
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <span class="panel-kicker">
+                                    FIND PEOPLE
+                                </span>
+
+                                <h3>
+                                    Search students
+                                </h3>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                id="closeAddUserButton"
+                                class="close-panel-button"
+                            >
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+
+                        <div class="user-search-box">
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                            <input
+                                type="text"
+                                id="addUserSearchInput"
+                                placeholder="Search name or email"
+                            >
+
+                        </div>
+
+
+                        <div
+                            id="addUserSearchResults"
+                            class="user-search-results"
+                        >
+
+                            <div class="empty-search">
+
+                                <i class="fa-solid fa-user-group"></i>
+
+                                <p>
+                                    Search for a student
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- SUGGESTIONS -->
+
+                    <div class="suggestions-card">
+
+                        <div class="suggestions-header">
+
+                            <div>
+
+                                <span class="panel-kicker">
+                                    DISCOVER
+                                </span>
+
+                                <h3>
+                                    People you may know
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="suggestedUsers"
+                            class="suggested-users"
+                        >
+
+                            <div class="suggestion-empty">
+
+                                <i class="fa-solid fa-user-group"></i>
+
+                                <p>
+                                    Use Add + to find people
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </aside>
 
             </div>
 
@@ -592,11 +912,10 @@
             class="page"
         >
 
-
             <div class="chat-layout">
 
 
-                <!-- CONVERSATION LIST -->
+                <!-- CONVERSATIONS -->
 
                 <div class="conversation-panel">
 
@@ -620,27 +939,75 @@
                             type="button"
                             id="newChatButton"
                             class="icon-button"
+                            title="New chat"
                         >
-
                             <i class="fa-solid fa-pen-to-square"></i>
-
                         </button>
 
                     </div>
 
+
+                    <!-- SEARCH -->
 
                     <div class="search-box">
 
                         <i class="fa-solid fa-magnifying-glass"></i>
 
                         <input
-                            id="userSearch"
+                            id="chatSearch"
                             type="text"
                             placeholder="Search people"
+                            autocomplete="off"
                         >
 
                     </div>
 
+
+                    <!-- USER SEARCH -->
+
+                    <div
+                        id="userSearchResults"
+                        class="user-search-results"
+                    ></div>
+
+
+                    <!-- FILTERS -->
+
+                    <div class="chat-filter-tabs">
+
+                        <button
+                            type="button"
+                            class="chat-filter active"
+                        >
+                            All
+                        </button>
+
+                        <button
+                            type="button"
+                            class="chat-filter"
+                        >
+                            Unread
+                            <span>0</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="chat-filter"
+                        >
+                            Favourites
+                        </button>
+
+                        <button
+                            type="button"
+                            class="chat-filter"
+                        >
+                            Groups
+                        </button>
+
+                    </div>
+
+
+                    <!-- CONVERSATIONS -->
 
                     <div
                         id="conversationList"
@@ -651,10 +1018,12 @@
 
 
 
-                <!-- CHAT AREA -->
+                <!-- CHAT -->
 
                 <div class="chat-panel">
 
+
+                    <!-- EMPTY -->
 
                     <div
                         id="emptyChat"
@@ -672,11 +1041,14 @@
                         </h3>
 
                         <p>
-                            Select a conversation to start chatting.
+                            Search for a student to start chatting.
                         </p>
 
                     </div>
 
+
+
+                    <!-- ACTIVE -->
 
                     <div
                         id="activeChat"
@@ -684,19 +1056,17 @@
                     >
 
 
-                        <div class="chat-header">
+                        <!-- HEADER -->
 
+                        <div class="chat-header">
 
                             <div class="chat-user-info">
 
-
                                 <div
-                                    id="chatAvatar"
+                                    id="chatUserAvatar"
                                     class="avatar"
                                 >
-
                                     <i class="fa-regular fa-user"></i>
-
                                 </div>
 
 
@@ -717,16 +1087,13 @@
 
                             <div class="chat-actions">
 
-
                                 <button
                                     type="button"
                                     id="audioCallButton"
                                     class="chat-action"
                                     title="Audio Call"
                                 >
-
                                     <i class="fa-solid fa-phone"></i>
-
                                 </button>
 
 
@@ -736,9 +1103,7 @@
                                     class="chat-action"
                                     title="Video Call"
                                 >
-
                                     <i class="fa-solid fa-video"></i>
-
                                 </button>
 
                             </div>
@@ -752,23 +1117,27 @@
                         ></div>
 
 
+                        <!-- MESSAGES -->
+
                         <div
                             id="messagesContainer"
                             class="messages-container"
                         ></div>
 
 
-                        <div class="message-composer">
+                        <!-- COMPOSER -->
 
+                        <form
+                            id="messageForm"
+                            class="message-composer"
+                        >
 
                             <label
                                 for="messageImage"
                                 class="composer-button"
                                 title="Attach image"
                             >
-
                                 <i class="fa-solid fa-paperclip"></i>
-
                             </label>
 
 
@@ -789,17 +1158,15 @@
 
 
                             <button
-                                type="button"
+                                type="submit"
                                 id="sendMessageButton"
                                 class="send-button"
                                 title="Send"
                             >
-
                                 <i class="fa-solid fa-paper-plane"></i>
-
                             </button>
 
-                        </div>
+                        </form>
 
                     </div>
 
@@ -819,7 +1186,6 @@
             id="callsPage"
             class="page"
         >
-
 
             <div class="page-header">
 
@@ -860,7 +1226,6 @@
             class="page"
         >
 
-
             <div class="page-header">
 
                 <div>
@@ -884,17 +1249,13 @@
 
             <div class="profile-card">
 
-
                 <div class="profile-top">
-
 
                     <div
                         id="profileAvatar"
                         class="large-avatar"
                     >
-
                         <i class="fa-regular fa-user"></i>
-
                     </div>
 
 
@@ -925,16 +1286,12 @@
                     for="profilePicture"
                     class="secondary-button"
                 >
-
                     <i class="fa-solid fa-camera"></i>
-
                     Change picture
-
                 </label>
 
 
                 <div class="profile-form">
-
 
                     <div class="form-group">
 
@@ -999,6 +1356,7 @@
                         id="saveProfileButton"
                         class="primary-button"
                     >
+                        <i class="fa-solid fa-floppy-disk"></i>
                         Save Profile
                     </button>
 
@@ -1018,7 +1376,6 @@
             id="settingsPage"
             class="page"
         >
-
 
             <div class="page-header">
 
@@ -1043,16 +1400,10 @@
 
             <div class="settings-card">
 
-
-                <!-- NOTIFICATIONS -->
-
                 <div class="setting-row">
 
-
                     <div class="setting-icon">
-
                         <i class="fa-regular fa-bell"></i>
-
                     </div>
 
 
@@ -1083,8 +1434,6 @@
                 </div>
 
 
-                <!-- CHANGE PASSWORD -->
-
                 <div class="settings-section">
 
                     <h3>
@@ -1111,13 +1460,12 @@
                         id="changePasswordButton"
                         class="primary-button"
                     >
+                        <i class="fa-solid fa-key"></i>
                         Change Password
                     </button>
 
                 </div>
 
-
-                <!-- DELETE ACCOUNT -->
 
                 <div class="danger-zone">
 
@@ -1139,6 +1487,7 @@
                         id="deleteAccountButton"
                         class="danger-button"
                     >
+                        <i class="fa-solid fa-trash"></i>
                         Delete Account
                     </button>
 
@@ -1155,7 +1504,7 @@
 
 
 <!-- =====================================================
-     INCOMING CALL MODAL
+     INCOMING CALL
 ===================================================== -->
 
 <div
@@ -1163,45 +1512,33 @@
     class="call-modal hidden"
 >
 
-
     <div class="call-modal-card">
 
-
         <div class="call-modal-icon">
-
             <i class="fa-solid fa-phone"></i>
-
         </div>
-
 
         <span class="incoming-label">
             INCOMING CALL
         </span>
 
-
         <h2>
             Incoming call
         </h2>
-
 
         <p id="incomingCallerName">
             Someone is calling you
         </p>
 
-
         <div class="call-modal-actions">
-
 
             <button
                 type="button"
                 id="rejectCallButton"
                 class="reject-call"
             >
-
                 <i class="fa-solid fa-phone-slash"></i>
-
                 Reject
-
             </button>
 
 
@@ -1210,11 +1547,8 @@
                 id="acceptCallButton"
                 class="accept-call"
             >
-
                 <i class="fa-solid fa-phone"></i>
-
                 Accept
-
             </button>
 
         </div>
@@ -1233,7 +1567,6 @@
     id="callScreen"
     class="call-screen hidden"
 >
-
 
     <div class="remote-video-container">
 
@@ -1269,15 +1602,12 @@
 
     <div class="call-controls">
 
-
         <button
             type="button"
             id="muteButton"
             class="call-control"
         >
-
             <i class="fa-solid fa-microphone"></i>
-
         </button>
 
 
@@ -1286,9 +1616,7 @@
             id="cameraButton"
             class="call-control"
         >
-
             <i class="fa-solid fa-video"></i>
-
         </button>
 
 
@@ -1297,9 +1625,7 @@
             id="endCallButton"
             class="call-control end"
         >
-
             <i class="fa-solid fa-phone-slash"></i>
-
         </button>
 
     </div>
@@ -1308,9 +1634,7 @@
 
 
 
-<!-- =====================================================
-     TOAST
-===================================================== -->
+<!-- TOAST -->
 
 <div
     id="toast"
@@ -1319,9 +1643,7 @@
 
 
 
-<!-- =====================================================
-     SCRIPTS
-===================================================== -->
+<!-- SCRIPTS -->
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -1336,65 +1658,390 @@
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    const passwordButtons =
-        document.querySelectorAll(".password-toggle");
+        /* PASSWORD */
 
+        document
+            .querySelectorAll(".password-toggle")
+            .forEach(function (button) {
 
-    passwordButtons.forEach(function (button) {
+                button.addEventListener(
+                    "click",
+                    function () {
 
-        button.addEventListener("click", function () {
+                        const input =
+                            document.getElementById(
+                                button.dataset.target
+                            );
 
-            const target =
-                document.getElementById(
-                    button.dataset.target
+                        if (!input) return;
+
+                        const icon =
+                            button.querySelector("i");
+
+                        if (
+                            input.type === "password"
+                        ) {
+
+                            input.type = "text";
+
+                            icon.classList.remove(
+                                "fa-eye"
+                            );
+
+                            icon.classList.add(
+                                "fa-eye-slash"
+                            );
+
+                        } else {
+
+                            input.type = "password";
+
+                            icon.classList.remove(
+                                "fa-eye-slash"
+                            );
+
+                            icon.classList.add(
+                                "fa-eye"
+                            );
+
+                        }
+
+                    }
                 );
 
+            });
 
-            if (!target) {
-                return;
+
+        /* CHARACTER COUNT */
+
+        const postContent =
+            document.getElementById(
+                "postContent"
+            );
+
+        const counter =
+            document.getElementById(
+                "postCharacterCount"
+            );
+
+        if (postContent && counter) {
+
+            postContent.addEventListener(
+                "input",
+                function () {
+
+                    counter.textContent =
+                        `${postContent.value.length}/10000`;
+
+                }
+            );
+
+        }
+
+
+        /* IMAGE PREVIEW */
+
+        const postImage =
+            document.getElementById(
+                "postImage"
+            );
+
+        const selectedImage =
+            document.getElementById(
+                "selectedPostImage"
+            );
+
+        if (postImage && selectedImage) {
+
+            postImage.addEventListener(
+                "change",
+                function () {
+
+                    const file =
+                        postImage.files[0];
+
+                    if (!file) {
+
+                        selectedImage.innerHTML =
+                            "";
+
+                        return;
+                    }
+
+                    const imageURL =
+                        URL.createObjectURL(
+                            file
+                        );
+
+                    selectedImage.innerHTML =
+                        `
+                        <div class="selected-image-preview">
+
+                            <img
+                                src="${imageURL}"
+                                alt="Selected image"
+                            >
+
+                            <button
+                                type="button"
+                                id="removePostImage"
+                                class="remove-image-button"
+                            >
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+                        `;
+
+
+                    const remove =
+                        document.getElementById(
+                            "removePostImage"
+                        );
+
+                    if (remove) {
+
+                        remove.addEventListener(
+                            "click",
+                            function () {
+
+                                postImage.value =
+                                    "";
+
+                                selectedImage.innerHTML =
+                                    "";
+
+                            }
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* NOTIFICATIONS */
+
+        const notificationButton =
+            document.getElementById(
+                "notificationButton"
+            );
+
+        const notificationPanel =
+            document.getElementById(
+                "notificationPanel"
+            );
+
+        const closeNotification =
+            document.getElementById(
+                "closeNotificationButton"
+            );
+
+        if (
+            notificationButton &&
+            notificationPanel
+        ) {
+
+            notificationButton.addEventListener(
+                "click",
+                function () {
+
+                    notificationPanel.classList.toggle(
+                        "hidden"
+                    );
+
+                }
+            );
+
+        }
+
+
+        if (
+            closeNotification &&
+            notificationPanel
+        ) {
+
+            closeNotification.addEventListener(
+                "click",
+                function () {
+
+                    notificationPanel.classList.add(
+                        "hidden"
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ADD USER */
+
+        const addButtons = [
+            document.getElementById(
+                "addUserButton"
+            ),
+            document.getElementById(
+                "addUserTopButton"
+            )
+        ];
+
+        const addPanel =
+            document.getElementById(
+                "addUserPanel"
+            );
+
+        const closeAdd =
+            document.getElementById(
+                "closeAddUserButton"
+            );
+
+        addButtons.forEach(
+            function (button) {
+
+                if (!button) return;
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        if (!addPanel) return;
+
+                        addPanel.classList.toggle(
+                            "hidden"
+                        );
+
+                    }
+                );
+
             }
+        );
 
 
-            const icon =
-                button.querySelector("i");
+        if (closeAdd && addPanel) {
+
+            closeAdd.addEventListener(
+                "click",
+                function () {
+
+                    addPanel.classList.add(
+                        "hidden"
+                    );
+
+                }
+            );
+
+        }
 
 
-            if (target.type === "password") {
+        /* HOME PROFILE */
 
-                target.type = "text";
+        const profileButton =
+            document.getElementById(
+                "homeProfileButton"
+            );
 
-                icon.classList.remove(
-                    "fa-eye"
+        if (profileButton) {
+
+            profileButton.addEventListener(
+                "click",
+                function () {
+
+                    const profile =
+                        document.querySelector(
+                            '.nav-item[data-page="profile"]'
+                        );
+
+                    if (profile) {
+                        profile.click();
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* FEED TABS */
+
+        document
+            .querySelectorAll(".feed-tab")
+            .forEach(function (tab) {
+
+                tab.addEventListener(
+                    "click",
+                    function () {
+
+                        if (
+                            tab.id ===
+                            "addUserTopButton"
+                        ) {
+                            return;
+                        }
+
+                        document
+                            .querySelectorAll(
+                                ".feed-tab"
+                            )
+                            .forEach(
+                                function (item) {
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                        tab.classList.add(
+                            "active"
+                        );
+
+                    }
                 );
 
-                icon.classList.add(
-                    "fa-eye-slash"
+            });
+
+
+        /* CHAT FILTERS */
+
+        document
+            .querySelectorAll(".chat-filter")
+            .forEach(function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        document
+                            .querySelectorAll(
+                                ".chat-filter"
+                            )
+                            .forEach(
+                                function (item) {
+                                    item.classList.remove(
+                                        "active"
+                                    );
+                                }
+                            );
+
+                        button.classList.add(
+                            "active"
+                        );
+
+                    }
                 );
 
-            } else {
+            });
 
-                target.type = "password";
-
-                icon.classList.remove(
-                    "fa-eye-slash"
-                );
-
-                icon.classList.add(
-                    "fa-eye"
-                );
-
-            }
-
-        });
-
-    });
-
-});
+    }
+);
 
 </script>
-
 
 </body>
 

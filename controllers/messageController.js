@@ -39,7 +39,7 @@ export const sendMessage = async (
             conversation.participants.some(
                 id =>
                     id.toString() ===
-                    req.user._id.toString()
+                    req.user.id.toString()
             );
 
         if (!isParticipant) {
@@ -65,7 +65,7 @@ export const sendMessage = async (
                     conversation._id,
 
                 sender:
-                    req.user._id,
+                    req.user.req.user.id,
 
                 receiver:
                     receiverId,
@@ -135,7 +135,7 @@ export const getMessages = async (
             conversation.participants.some(
                 id =>
                     id.toString() ===
-                    req.user._id.toString()
+                    req.user.req.id.toString()
             );
 
         if (!isParticipant) {
@@ -167,7 +167,7 @@ export const getMessages = async (
                     conversation._id,
 
                 receiver:
-                    req.user._id,
+                    req.user.id,
 
                 seen: false
             },
@@ -210,7 +210,7 @@ export const updateMessage = async (
 
         if (
             message.sender.toString() !==
-            req.user._id.toString()
+            req.user.id.toString()
         ) {
             return res.status(403).json({
                 message: "You can only edit your own messages"
@@ -290,7 +290,7 @@ export const deleteMessage = async (
 
         if (
             message.sender.toString() !==
-            req.user._id.toString()
+            req.user.id.toString()
         ) {
             return res.status(403).json({
                 message: "You can only delete your own messages"
@@ -343,7 +343,7 @@ export const markMessageSeen = async (
 
         if (
             message.receiver.toString() !==
-            req.user._id.toString()
+            req.user.id.toString()
         ) {
             return res.status(403).json({
                 message: "Access denied"

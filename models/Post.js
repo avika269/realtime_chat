@@ -10,7 +10,7 @@ const postSchema = new mongoose.Schema(
 
         content: {
             type: String,
-            required: true
+            default: ""
         },
 
         image: {
@@ -37,4 +37,5 @@ const postSchema = new mongoose.Schema(
     }
 )
 
-export default mongoose.models.Post || mongoose.model("Post", postSchema)
+export default mongoose.models.Post ||
+    mongoose.model("Post", postSchema)

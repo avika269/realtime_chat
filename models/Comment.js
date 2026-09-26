@@ -8,7 +8,7 @@ const commentSchema = new mongoose.Schema(
             required: true
         },
 
-        author: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true
@@ -17,7 +17,7 @@ const commentSchema = new mongoose.Schema(
         text: {
             type: String,
             required: true,
-            maxlength: 500
+            trim: true
         }
     },
     {
@@ -25,4 +25,5 @@ const commentSchema = new mongoose.Schema(
     }
 )
 
-export default mongoose.models.Comment || mongoose.model("Comment", commentSchema)
+export default mongoose.models.Comment ||
+    mongoose.model("Comment", commentSchema)
