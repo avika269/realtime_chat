@@ -13,7 +13,7 @@ import {
     getFollowing,
     deleteAccount,
     getPublicProfile
-} from "../controllers/userController.js"
+} from "../controllers/usercontroller.js"
 
 import { authenticate } from "../middleware/auth.js"
 import { upload } from "../controllers/mediaController.js"
