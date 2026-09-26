@@ -72,7 +72,7 @@
         <div class="auth-card">
 
 
-            <!-- LOGIN / SIGN UP -->
+            <!-- LOGIN / SIGN UP TABS -->
 
             <div class="auth-tabs">
 
@@ -144,7 +144,6 @@
                             required
                         >
 
-
                         <button
                             type="button"
                             class="password-toggle"
@@ -194,6 +193,7 @@
                             type="text"
                             id="registerName"
                             placeholder="Your name"
+                            autocomplete="name"
                             required
                         >
 
@@ -216,6 +216,7 @@
                             type="email"
                             id="registerEmail"
                             placeholder="you@akgec.ac.in"
+                            autocomplete="email"
                             required
                         >
 
@@ -259,6 +260,7 @@
                             type="password"
                             id="registerPassword"
                             placeholder="Minimum 6 characters"
+                            autocomplete="new-password"
                             required
                         >
 
@@ -296,7 +298,7 @@
 
 
             <!-- =================================================
-                 GOOGLE
+                 GOOGLE LOGIN
             ================================================= -->
 
             <div class="or-divider">
@@ -451,7 +453,7 @@
 
 
     <!-- =================================================
-         CONTENT
+         MAIN CONTENT
     ================================================= -->
 
     <main class="content-area">
@@ -475,7 +477,9 @@
                         CAMPUS COMMUNITY
                     </span>
 
-                    <h2>Home</h2>
+                    <h2>
+                        Home
+                    </h2>
 
                     <p>
                         What's happening around campus?
@@ -543,7 +547,9 @@
 
                             <i class="fa-regular fa-image"></i>
 
-                            <span>Photo</span>
+                            <span>
+                                Photo
+                            </span>
 
                         </label>
 
@@ -590,7 +596,7 @@
             <div class="chat-layout">
 
 
-                <!-- CONVERSATIONS -->
+                <!-- CONVERSATION LIST -->
 
                 <div class="conversation-panel">
 
@@ -645,7 +651,7 @@
 
 
 
-                <!-- CHAT -->
+                <!-- CHAT AREA -->
 
                 <div class="chat-panel">
 
@@ -670,7 +676,6 @@
                         </p>
 
                     </div>
-
 
 
                     <div
@@ -1039,6 +1044,8 @@
             <div class="settings-card">
 
 
+                <!-- NOTIFICATIONS -->
+
                 <div class="setting-row">
 
 
@@ -1076,44 +1083,7 @@
                 </div>
 
 
-
-                <div class="setting-row">
-
-
-                    <div class="setting-icon">
-
-                        <i class="fa-solid fa-moon"></i>
-
-                    </div>
-
-
-                    <div class="setting-content">
-
-                        <strong>
-                            Dark mode
-                        </strong>
-
-                        <p>
-                            Change the application appearance
-                        </p>
-
-                    </div>
-
-
-                    <label class="switch">
-
-                        <input
-                            type="checkbox"
-                            id="darkModeToggle"
-                        >
-
-                        <span class="slider"></span>
-
-                    </label>
-
-                </div>
-
-
+                <!-- CHANGE PASSWORD -->
 
                 <div class="settings-section">
 
@@ -1147,6 +1117,7 @@
                 </div>
 
 
+                <!-- DELETE ACCOUNT -->
 
                 <div class="danger-zone">
 
@@ -1184,7 +1155,7 @@
 
 
 <!-- =====================================================
-     INCOMING CALL
+     INCOMING CALL MODAL
 ===================================================== -->
 
 <div
@@ -1247,6 +1218,89 @@
             </button>
 
         </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     CALL SCREEN
+===================================================== -->
+
+<div
+    id="callScreen"
+    class="call-screen hidden"
+>
+
+
+    <div class="remote-video-container">
+
+        <video
+            id="remoteVideo"
+            autoplay
+            playsinline
+        ></video>
+
+    </div>
+
+
+    <div class="local-video-container">
+
+        <video
+            id="localVideo"
+            autoplay
+            muted
+            playsinline
+        ></video>
+
+    </div>
+
+
+    <div class="call-info">
+
+        <h3 id="callStatus">
+            Connecting...
+        </h3>
+
+    </div>
+
+
+    <div class="call-controls">
+
+
+        <button
+            type="button"
+            id="muteButton"
+            class="call-control"
+        >
+
+            <i class="fa-solid fa-microphone"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            id="cameraButton"
+            class="call-control"
+        >
+
+            <i class="fa-solid fa-video"></i>
+
+        </button>
+
+
+        <button
+            type="button"
+            id="endCallButton"
+            class="call-control end"
+        >
+
+            <i class="fa-solid fa-phone-slash"></i>
+
+        </button>
 
     </div>
 
