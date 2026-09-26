@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>PulseChat</title>
+    <title>CampusChat</title>
 
     <link
         rel="stylesheet"
@@ -19,60 +21,103 @@
         rel="stylesheet"
         href="/style.css"
     >
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+        defer
+    ></script>
+
 </head>
+
 
 <body>
 
+
+<!-- =====================================================
+     AUTH PAGE
+===================================================== -->
+
 <div id="authPage" class="auth-page">
+
+    <div class="auth-overlay"></div>
+
 
     <div class="auth-container">
 
+
+        <!-- BRAND -->
+
         <div class="auth-brand">
+
             <div class="brand-icon">
-                <i class="fa-solid fa-comments"></i>
+
+                <i class="fa-solid fa-graduation-cap"></i>
+
             </div>
 
-            <h1>PulseChat</h1>
+            <h1>
+                Campus<span>Chat</span>
+            </h1>
 
             <p>
-                Chat, connect and share with your college community.
+                Connect • Chat • Call
             </p>
+
         </div>
 
+
+        <!-- AUTH CARD -->
+
         <div class="auth-card">
+
+
+            <!-- LOGIN / SIGN UP -->
 
             <div class="auth-tabs">
 
                 <button
+                    type="button"
                     id="loginTab"
                     class="auth-tab active"
                 >
                     Login
                 </button>
 
+
                 <button
+                    type="button"
                     id="registerTab"
                     class="auth-tab"
                 >
-                    Register
+                    Sign Up
                 </button>
 
             </div>
 
+
+            <!-- =================================================
+                 LOGIN FORM
+            ================================================= -->
+
             <form id="loginForm">
+
 
                 <div class="form-group">
 
-                    <label>Email</label>
+                    <label for="loginEmail">
+                        College Email ID
+                    </label>
 
                     <div class="input-wrapper">
 
-                        <i class="fa-solid fa-envelope"></i>
+                        <i class="fa-regular fa-envelope"></i>
 
                         <input
                             type="email"
                             id="loginEmail"
-                            placeholder="College email"
+                            placeholder="you@akgec.ac.in"
+                            autocomplete="email"
                             required
                         >
 
@@ -80,9 +125,12 @@
 
                 </div>
 
+
                 <div class="form-group">
 
-                    <label>Password</label>
+                    <label for="loginPassword">
+                        Password
+                    </label>
 
                     <div class="input-wrapper">
 
@@ -92,12 +140,25 @@
                             type="password"
                             id="loginPassword"
                             placeholder="Password"
+                            autocomplete="current-password"
                             required
                         >
+
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="loginPassword"
+                        >
+
+                            <i class="fa-regular fa-eye"></i>
+
+                        </button>
 
                     </div>
 
                 </div>
+
 
                 <button
                     type="submit"
@@ -108,18 +169,26 @@
 
             </form>
 
+
+            <!-- =================================================
+                 REGISTER FORM
+            ================================================= -->
+
             <form
                 id="registerForm"
                 class="hidden"
             >
 
+
                 <div class="form-group">
 
-                    <label>Name</label>
+                    <label for="registerName">
+                        Full Name
+                    </label>
 
                     <div class="input-wrapper">
 
-                        <i class="fa-solid fa-user"></i>
+                        <i class="fa-regular fa-user"></i>
 
                         <input
                             type="text"
@@ -132,18 +201,21 @@
 
                 </div>
 
+
                 <div class="form-group">
 
-                    <label>College email</label>
+                    <label for="registerEmail">
+                        College Email ID
+                    </label>
 
                     <div class="input-wrapper">
 
-                        <i class="fa-solid fa-envelope"></i>
+                        <i class="fa-regular fa-envelope"></i>
 
                         <input
                             type="email"
                             id="registerEmail"
-                            placeholder="College email"
+                            placeholder="you@akgec.ac.in"
                             required
                         >
 
@@ -151,9 +223,12 @@
 
                 </div>
 
+
                 <div class="form-group">
 
-                    <label>College</label>
+                    <label for="registerCollege">
+                        College
+                    </label>
 
                     <div class="input-wrapper">
 
@@ -169,9 +244,12 @@
 
                 </div>
 
+
                 <div class="form-group">
 
-                    <label>Password</label>
+                    <label for="registerPassword">
+                        Password
+                    </label>
 
                     <div class="input-wrapper">
 
@@ -184,23 +262,67 @@
                             required
                         >
 
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="registerPassword"
+                        >
+
+                            <i class="fa-regular fa-eye"></i>
+
+                        </button>
+
                     </div>
 
                 </div>
+
 
                 <button
                     type="submit"
                     class="primary-button"
                 >
-                    Create account
+                    Create Account
                 </button>
 
             </form>
+
+
+            <!-- AUTH MESSAGE -->
 
             <div
                 id="authMessage"
                 class="auth-message"
             ></div>
+
+
+            <!-- =================================================
+                 GOOGLE
+            ================================================= -->
+
+            <div class="or-divider">
+
+                <span></span>
+
+                <strong>OR</strong>
+
+                <span></span>
+
+            </div>
+
+
+            <div
+                id="googleSignIn"
+                class="google-signin"
+            ></div>
+
+
+            <p class="college-only">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                Only college email IDs are allowed.
+
+            </p>
 
         </div>
 
@@ -209,113 +331,192 @@
 </div>
 
 
+
+<!-- =====================================================
+     MAIN APPLICATION
+===================================================== -->
+
 <div
     id="mainApp"
     class="main-app hidden"
 >
 
+
+    <!-- =================================================
+         SIDEBAR
+    ================================================= -->
+
     <aside class="sidebar">
+
 
         <div class="sidebar-brand">
 
             <div class="brand-icon small">
-                <i class="fa-solid fa-comments"></i>
+
+                <i class="fa-solid fa-graduation-cap"></i>
+
             </div>
 
-            <span>PulseChat</span>
+            <span>
+                Campus<span>Chat</span>
+            </span>
 
         </div>
 
+
         <nav class="main-navigation">
 
+
             <button
+                type="button"
                 class="nav-item active"
                 data-page="home"
             >
+
                 <i class="fa-solid fa-house"></i>
+
                 <span>Home</span>
+
             </button>
 
+
             <button
+                type="button"
                 class="nav-item"
                 data-page="messages"
             >
+
                 <i class="fa-solid fa-message"></i>
+
                 <span>Messages</span>
+
             </button>
 
+
             <button
+                type="button"
                 class="nav-item"
                 data-page="calls"
             >
+
                 <i class="fa-solid fa-phone"></i>
+
                 <span>Calls</span>
+
             </button>
 
+
             <button
+                type="button"
                 class="nav-item"
                 data-page="profile"
             >
+
                 <i class="fa-solid fa-user"></i>
+
                 <span>Profile</span>
+
             </button>
 
+
             <button
+                type="button"
                 class="nav-item"
                 data-page="settings"
             >
+
                 <i class="fa-solid fa-gear"></i>
+
                 <span>Settings</span>
+
             </button>
 
         </nav>
 
+
         <button
+            type="button"
             id="logoutButton"
             class="logout-button"
         >
+
             <i class="fa-solid fa-right-from-bracket"></i>
+
             <span>Logout</span>
+
         </button>
 
     </aside>
 
 
+
+    <!-- =================================================
+         CONTENT
+    ================================================= -->
+
     <main class="content-area">
+
+
+        <!-- =================================================
+             HOME
+        ================================================= -->
 
         <section
             id="homePage"
             class="page active-page"
         >
 
+
             <div class="page-header">
 
                 <div>
+
+                    <span class="page-kicker">
+                        CAMPUS COMMUNITY
+                    </span>
+
                     <h2>Home</h2>
-                    <p>What's happening?</p>
+
+                    <p>
+                        What's happening around campus?
+                    </p>
+
                 </div>
 
+
                 <button
+                    type="button"
                     id="homeProfileButton"
                     class="icon-button"
                 >
-                    <i class="fa-solid fa-user"></i>
+
+                    <i class="fa-regular fa-user"></i>
+
                 </button>
 
             </div>
 
+
             <div class="feed-container">
+
+
+                <!-- CREATE POST -->
 
                 <div class="create-post-card">
 
+
                     <div class="create-post-user">
+
 
                         <div
                             id="createPostAvatar"
                             class="avatar"
                         >
-                            <i class="fa-solid fa-user"></i>
+
+                            <i class="fa-regular fa-user"></i>
+
                         </div>
+
 
                         <textarea
                             id="postContent"
@@ -325,15 +526,27 @@
 
                     </div>
 
+
+                    <div
+                        id="selectedPostImage"
+                        class="selected-file"
+                    ></div>
+
+
                     <div class="create-post-footer">
+
 
                         <label
                             for="postImage"
                             class="attachment-button"
                         >
-                            <i class="fa-solid fa-image"></i>
+
+                            <i class="fa-regular fa-image"></i>
+
                             <span>Photo</span>
+
                         </label>
+
 
                         <input
                             type="file"
@@ -342,7 +555,9 @@
                             hidden
                         >
 
+
                         <button
+                            type="button"
                             id="createPostButton"
                             class="primary-button post-button"
                         >
@@ -351,12 +566,8 @@
 
                     </div>
 
-                    <div
-                        id="selectedPostImage"
-                        class="selected-file"
-                    ></div>
-
                 </div>
+
 
                 <div id="feed"></div>
 
@@ -365,27 +576,52 @@
         </section>
 
 
+
+        <!-- =================================================
+             MESSAGES
+        ================================================= -->
+
         <section
             id="messagesPage"
             class="page"
         >
 
+
             <div class="chat-layout">
+
+
+                <!-- CONVERSATIONS -->
 
                 <div class="conversation-panel">
 
+
                     <div class="chat-panel-header">
 
-                        <h2>Messages</h2>
+                        <div>
+
+                            <span class="page-kicker">
+                                CONNECT
+                            </span>
+
+                            <h2>
+                                Messages
+                            </h2>
+
+                        </div>
+
 
                         <button
+                            type="button"
                             id="newChatButton"
                             class="icon-button"
                         >
+
                             <i class="fa-solid fa-pen-to-square"></i>
+
                         </button>
 
                     </div>
+
 
                     <div class="search-box">
 
@@ -399,6 +635,7 @@
 
                     </div>
 
+
                     <div
                         id="conversationList"
                         class="conversation-list"
@@ -407,16 +644,26 @@
                 </div>
 
 
+
+                <!-- CHAT -->
+
                 <div class="chat-panel">
+
 
                     <div
                         id="emptyChat"
                         class="empty-chat"
                     >
 
-                        <i class="fa-solid fa-message"></i>
+                        <div class="empty-chat-icon">
 
-                        <h3>Your messages</h3>
+                            <i class="fa-regular fa-comments"></i>
+
+                        </div>
+
+                        <h3>
+                            Your messages
+                        </h3>
 
                         <p>
                             Select a conversation to start chatting.
@@ -425,21 +672,28 @@
                     </div>
 
 
+
                     <div
                         id="activeChat"
                         class="active-chat hidden"
                     >
 
+
                         <div class="chat-header">
 
+
                             <div class="chat-user-info">
+
 
                                 <div
                                     id="chatAvatar"
                                     class="avatar"
                                 >
-                                    <i class="fa-solid fa-user"></i>
+
+                                    <i class="fa-regular fa-user"></i>
+
                                 </div>
+
 
                                 <div>
 
@@ -447,9 +701,7 @@
                                         User
                                     </h3>
 
-                                    <span
-                                        id="chatUserStatus"
-                                    >
+                                    <span id="chatUserStatus">
                                         Offline
                                     </span>
 
@@ -457,25 +709,42 @@
 
                             </div>
 
+
                             <div class="chat-actions">
 
-                                <button
-                                    id="audioCallButton"
-                                    class="icon-button"
-                                >
-                                    <i class="fa-solid fa-phone"></i>
-                                </button>
 
                                 <button
-                                    id="videoCallButton"
-                                    class="icon-button"
+                                    type="button"
+                                    id="audioCallButton"
+                                    class="chat-action"
+                                    title="Audio Call"
                                 >
+
+                                    <i class="fa-solid fa-phone"></i>
+
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    id="videoCallButton"
+                                    class="chat-action"
+                                    title="Video Call"
+                                >
+
                                     <i class="fa-solid fa-video"></i>
+
                                 </button>
 
                             </div>
 
                         </div>
+
+
+                        <div
+                            id="typingIndicator"
+                            class="typing-indicator"
+                        ></div>
 
 
                         <div
@@ -486,12 +755,17 @@
 
                         <div class="message-composer">
 
+
                             <label
                                 for="messageImage"
-                                class="icon-button"
+                                class="composer-button"
+                                title="Attach image"
                             >
+
                                 <i class="fa-solid fa-paperclip"></i>
+
                             </label>
+
 
                             <input
                                 type="file"
@@ -500,17 +774,24 @@
                                 hidden
                             >
 
+
                             <input
                                 id="messageInput"
                                 type="text"
-                                placeholder="Type a message"
+                                placeholder="Type a message..."
+                                autocomplete="off"
                             >
 
+
                             <button
+                                type="button"
                                 id="sendMessageButton"
                                 class="send-button"
+                                title="Send"
                             >
+
                                 <i class="fa-solid fa-paper-plane"></i>
+
                             </button>
 
                         </div>
@@ -524,19 +805,37 @@
         </section>
 
 
+
+        <!-- =================================================
+             CALLS
+        ================================================= -->
+
         <section
             id="callsPage"
             class="page"
         >
 
+
             <div class="page-header">
 
                 <div>
-                    <h2>Calls</h2>
-                    <p>Your recent calls</p>
+
+                    <span class="page-kicker">
+                        COMMUNICATION
+                    </span>
+
+                    <h2>
+                        Calls
+                    </h2>
+
+                    <p>
+                        Your recent calls
+                    </p>
+
                 </div>
 
             </div>
+
 
             <div
                 id="callHistory"
@@ -546,28 +845,68 @@
         </section>
 
 
+
+        <!-- =================================================
+             PROFILE
+        ================================================= -->
+
         <section
             id="profilePage"
             class="page"
         >
 
+
             <div class="page-header">
 
                 <div>
-                    <h2>Profile</h2>
-                    <p>Your account</p>
+
+                    <span class="page-kicker">
+                        ACCOUNT
+                    </span>
+
+                    <h2>
+                        Profile
+                    </h2>
+
+                    <p>
+                        Manage your CampusChat profile
+                    </p>
+
                 </div>
 
             </div>
 
+
             <div class="profile-card">
 
-                <div
-                    id="profileAvatar"
-                    class="large-avatar"
-                >
-                    <i class="fa-solid fa-user"></i>
+
+                <div class="profile-top">
+
+
+                    <div
+                        id="profileAvatar"
+                        class="large-avatar"
+                    >
+
+                        <i class="fa-regular fa-user"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            Your Profile
+                        </h3>
+
+                        <p>
+                            Keep your information up to date.
+                        </p>
+
+                    </div>
+
                 </div>
+
 
                 <input
                     type="file"
@@ -576,19 +915,27 @@
                     hidden
                 >
 
+
                 <label
                     for="profilePicture"
                     class="secondary-button"
                 >
+
                     <i class="fa-solid fa-camera"></i>
+
                     Change picture
+
                 </label>
+
 
                 <div class="profile-form">
 
+
                     <div class="form-group">
 
-                        <label>Name</label>
+                        <label for="profileName">
+                            Name
+                        </label>
 
                         <input
                             id="profileName"
@@ -597,9 +944,12 @@
 
                     </div>
 
+
                     <div class="form-group">
 
-                        <label>Email</label>
+                        <label for="profileEmail">
+                            Email
+                        </label>
 
                         <input
                             id="profileEmail"
@@ -609,9 +959,12 @@
 
                     </div>
 
+
                     <div class="form-group">
 
-                        <label>College</label>
+                        <label for="profileCollege">
+                            College
+                        </label>
 
                         <input
                             id="profileCollege"
@@ -620,22 +973,28 @@
 
                     </div>
 
+
                     <div class="form-group">
 
-                        <label>Bio</label>
+                        <label for="profileBio">
+                            Bio
+                        </label>
 
                         <textarea
                             id="profileBio"
                             maxlength="160"
+                            placeholder="Tell people something about yourself..."
                         ></textarea>
 
                     </div>
 
+
                     <button
+                        type="button"
                         id="saveProfileButton"
                         class="primary-button"
                     >
-                        Save profile
+                        Save Profile
                     </button>
 
                 </div>
@@ -645,28 +1004,63 @@
         </section>
 
 
+
+        <!-- =================================================
+             SETTINGS
+        ================================================= -->
+
         <section
             id="settingsPage"
             class="page"
         >
 
+
             <div class="page-header">
 
                 <div>
-                    <h2>Settings</h2>
-                    <p>Manage your account</p>
+
+                    <span class="page-kicker">
+                        PREFERENCES
+                    </span>
+
+                    <h2>
+                        Settings
+                    </h2>
+
+                    <p>
+                        Manage your account and preferences
+                    </p>
+
                 </div>
 
             </div>
 
+
             <div class="settings-card">
+
 
                 <div class="setting-row">
 
-                    <div>
-                        <strong>Notifications</strong>
-                        <p>Receive message notifications</p>
+
+                    <div class="setting-icon">
+
+                        <i class="fa-regular fa-bell"></i>
+
                     </div>
+
+
+                    <div class="setting-content">
+
+                        <strong>
+                            Notifications
+                        </strong>
+
+                        <p>
+                            Receive message notifications
+                        </p>
+
+                    </div>
+
 
                     <label class="switch">
 
@@ -681,12 +1075,30 @@
 
                 </div>
 
+
+
                 <div class="setting-row">
 
-                    <div>
-                        <strong>Dark mode</strong>
-                        <p>Change the application appearance</p>
+
+                    <div class="setting-icon">
+
+                        <i class="fa-solid fa-moon"></i>
+
                     </div>
+
+
+                    <div class="setting-content">
+
+                        <strong>
+                            Dark mode
+                        </strong>
+
+                        <p>
+                            Change the application appearance
+                        </p>
+
+                    </div>
+
 
                     <label class="switch">
 
@@ -701,9 +1113,14 @@
 
                 </div>
 
+
+
                 <div class="settings-section">
 
-                    <h3>Change password</h3>
+                    <h3>
+                        Change password
+                    </h3>
+
 
                     <input
                         id="currentPassword"
@@ -711,34 +1128,47 @@
                         placeholder="Current password"
                     >
 
+
                     <input
                         id="newPassword"
                         type="password"
                         placeholder="New password"
                     >
 
+
                     <button
+                        type="button"
                         id="changePasswordButton"
                         class="primary-button"
                     >
-                        Change password
+                        Change Password
                     </button>
 
                 </div>
 
+
+
                 <div class="danger-zone">
 
-                    <h3>Delete account</h3>
+                    <div>
 
-                    <p>
-                        This permanently deletes your account.
-                    </p>
+                        <h3>
+                            Delete account
+                        </h3>
+
+                        <p>
+                            This permanently deletes your account.
+                        </p>
+
+                    </div>
+
 
                     <button
+                        type="button"
                         id="deleteAccountButton"
                         class="danger-button"
                     >
-                        Delete account
+                        Delete Account
                     </button>
 
                 </div>
@@ -752,39 +1182,68 @@
 </div>
 
 
+
+<!-- =====================================================
+     INCOMING CALL
+===================================================== -->
+
 <div
     id="incomingCallModal"
     class="call-modal hidden"
 >
 
+
     <div class="call-modal-card">
 
+
         <div class="call-modal-icon">
+
             <i class="fa-solid fa-phone"></i>
+
         </div>
 
-        <h2>Incoming call</h2>
+
+        <span class="incoming-label">
+            INCOMING CALL
+        </span>
+
+
+        <h2>
+            Incoming call
+        </h2>
+
 
         <p id="incomingCallerName">
             Someone is calling you
         </p>
 
+
         <div class="call-modal-actions">
 
+
             <button
+                type="button"
                 id="rejectCallButton"
                 class="reject-call"
             >
+
                 <i class="fa-solid fa-phone-slash"></i>
+
                 Reject
+
             </button>
 
+
             <button
+                type="button"
                 id="acceptCallButton"
                 class="accept-call"
             >
+
                 <i class="fa-solid fa-phone"></i>
+
                 Accept
+
             </button>
 
         </div>
@@ -794,18 +1253,95 @@
 </div>
 
 
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
 <div
     id="toast"
     class="toast"
 ></div>
 
 
+
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
+
 <script src="/socket.io/socket.io.js"></script>
 
 <script src="/app.js"></script>
+
 <script src="/chat.js"></script>
-<script src="/calls.js"></script>
+
+<script src="/call.js"></script>
+
 <script src="/social.js"></script>
 
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const passwordButtons =
+        document.querySelectorAll(".password-toggle");
+
+
+    passwordButtons.forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const target =
+                document.getElementById(
+                    button.dataset.target
+                );
+
+
+            if (!target) {
+                return;
+            }
+
+
+            const icon =
+                button.querySelector("i");
+
+
+            if (target.type === "password") {
+
+                target.type = "text";
+
+                icon.classList.remove(
+                    "fa-eye"
+                );
+
+                icon.classList.add(
+                    "fa-eye-slash"
+                );
+
+            } else {
+
+                target.type = "password";
+
+                icon.classList.remove(
+                    "fa-eye-slash"
+                );
+
+                icon.classList.add(
+                    "fa-eye"
+                );
+
+            }
+
+        });
+
+    });
+
+});
+
+</script>
+
+
 </body>
+
 </html>

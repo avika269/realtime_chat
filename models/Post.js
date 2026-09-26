@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const postSchema = new mongoose.Schema(
     {
-        author: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true
@@ -10,9 +10,7 @@ const postSchema = new mongoose.Schema(
 
         content: {
             type: String,
-            default: "",
-            maxlength: 10000,
-            trim: true
+            required: true
         },
 
         image: {
@@ -37,9 +35,6 @@ const postSchema = new mongoose.Schema(
     {
         timestamps: true
     }
-);
+)
 
-export default mongoose.model(
-    "Post",
-    postSchema
-);
+export default mongoose.models.Post || mongoose.model("Post", postSchema)

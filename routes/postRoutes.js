@@ -1,63 +1,21 @@
-import express from "express";
+import express from "express"
 
 import {
     createPost,
-    getFeed,
+    getPosts,
     getPost,
     updatePost,
-    deletePost,
-    toggleLike,
-    toggleRepost
-} from "../controllers/postController.js";
-
-import  { authenticate } from "../middleware/auth.js";
-
-import upload from "../middleware/upload.js";
-
-const router = express.Router();
-
-router.get(
-    "/",
-    authenticate,
-    getFeed
-);
-
-router.get(
-    "/:id",
-    authenticate,
-    getPost
-);
-
-router.post(
-    "/",
-    authenticate,
-    upload.single("image"),
-    createPost
-);
-
-router.patch(
-    "/:id",
-    authenticate,
-    upload.single("image"),
-    updatePost
-);
-
-router.delete(
-    "/:id",
-    authenticate,
     deletePost
-);
+} from "../controllers/postController.js"
 
-router.post(
-    "/:id/like",
-    authenticate,
-    toggleLike
-);
+import { authenticate } from "../middleware/auth.js"
 
-router.post(
-    "/:id/repost",
-   authenticate,
-    toggleRepost
-);
+const router = express.Router()
 
-export default router;
+router.post("/", authenticate, createPost)
+router.get("/", authenticate, getPosts)
+router.get("/:id", authenticate, getPost)
+router.patch("/:id", authenticate, updatePost)
+router.delete("/:id", authenticate, deletePost)
+
+export default router
