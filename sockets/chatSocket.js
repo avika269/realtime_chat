@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Message from "../models/Message.js";
-import Conversation from "../models/Conversation.js";
+import Conversation from "../models/conversation.js";
 
 const onlineUsers =
     new Map();
