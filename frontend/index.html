@@ -148,8 +148,140 @@
                 >
                     Login
                 </button>
+                <button
+    type="button"
+    id="forgotPasswordButton"
+    class="forgot-password-button"
+>
+    Forgot password?
+</button>
 
             </form>
+
+            <!-- FORGOT PASSWORD -->
+
+<div
+    id="forgotPasswordSection"
+    class="hidden"
+>
+
+    <div class="form-group">
+
+        <label for="forgotEmail">
+            College Email ID
+        </label>
+
+        <div class="input-wrapper">
+
+            <i class="fa-regular fa-envelope"></i>
+
+            <input
+                type="email"
+                id="forgotEmail"
+                placeholder="you@akgec.ac.in"
+                autocomplete="email"
+            >
+
+        </div>
+
+    </div>
+
+    <button
+        type="button"
+        id="sendOtpButton"
+        class="primary-button"
+    >
+        Send OTP
+    </button>
+
+    <div
+        id="otpSection"
+        class="hidden"
+    >
+
+        <div class="form-group">
+
+            <label for="forgotOtp">
+                OTP
+            </label>
+
+            <div class="input-wrapper">
+
+                <i class="fa-solid fa-key"></i>
+
+                <input
+                    type="text"
+                    id="forgotOtp"
+                    placeholder="Enter 6-digit OTP"
+                    maxlength="6"
+                    inputmode="numeric"
+                >
+
+            </div>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="forgotNewPassword">
+                New Password
+            </label>
+
+            <div class="input-wrapper">
+
+                <i class="fa-solid fa-lock"></i>
+
+                <input
+                    type="password"
+                    id="forgotNewPassword"
+                    placeholder="Minimum 6 characters"
+                >
+
+            </div>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="forgotConfirmPassword">
+                Confirm Password
+            </label>
+
+            <div class="input-wrapper">
+
+                <i class="fa-solid fa-lock"></i>
+
+                <input
+                    type="password"
+                    id="forgotConfirmPassword"
+                    placeholder="Confirm new password"
+                >
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            id="resetPasswordButton"
+            class="primary-button"
+        >
+            Reset Password
+        </button>
+
+    </div>
+
+    <button
+        type="button"
+        id="backToLoginButton"
+        class="forgot-password-button"
+    >
+        Back to Login
+    </button>
+
+</div>
+
+            
 
 
             <!-- REGISTER -->

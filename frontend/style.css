@@ -3350,3 +3350,209 @@ textarea {
     }
 }
 
+/* ============================= */
+/* FORGOT PASSWORD / OTP SECTION */
+/* ============================= */
+
+#forgotPasswordSection {
+    width: 100%;
+    animation: otpSectionFadeIn 0.3s ease;
+}
+
+#forgotPasswordSection .form-group {
+    margin-bottom: 18px;
+}
+
+#forgotPasswordSection label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+#forgotPasswordSection .input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#forgotPasswordSection .input-wrapper i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #159447;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+#forgotPasswordSection input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px 13px 42px;
+    border: 1px solid #d9e4dd;
+    border-radius: 10px;
+    background: #f9fcfa;
+    color: #222;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#forgotPasswordSection input:focus {
+    border-color: #159447;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(21, 148, 71, 0.10);
+}
+
+#forgotPasswordSection input::placeholder {
+    color: #9aa7a0;
+}
+
+
+/* SEND OTP BUTTON */
+
+#sendOtpButton,
+#resetPasswordButton {
+    width: 100%;
+    margin-top: 4px;
+}
+
+
+/* OTP AREA */
+
+#otpSection {
+    margin-top: 22px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #f4faf6;
+    border: 1px solid #dceee2;
+    animation: otpBoxFadeIn 0.3s ease;
+}
+
+#otpSection .form-group:last-of-type {
+    margin-bottom: 16px;
+}
+
+
+/* OTP INPUT */
+
+#forgotOtp {
+    letter-spacing: 6px;
+    text-align: center;
+    font-size: 20px !important;
+    font-weight: 700;
+    padding-left: 42px !important;
+}
+
+
+/* RESET PASSWORD BUTTON */
+
+#resetPasswordButton {
+    margin-top: 5px;
+}
+
+
+/* BACK TO LOGIN */
+
+#backToLoginButton {
+    display: block;
+    width: 100%;
+    margin-top: 18px;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: #159447;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#backToLoginButton:hover {
+    color: #0f7337;
+    text-decoration: underline;
+}
+
+
+/* FORGOT PASSWORD BUTTON */
+
+#forgotPasswordButton {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: #159447;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#forgotPasswordButton:hover {
+    color: #0f7337;
+    text-decoration: underline;
+}
+
+
+/* SMALL OTP HEADER EFFECT */
+
+#otpSection::before {
+    content: "Verification";
+    display: block;
+    margin-bottom: 14px;
+    color: #159447;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+/* ANIMATIONS */
+
+@keyframes otpSectionFadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+@keyframes otpBoxFadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+
+    #otpSection {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    #forgotOtp {
+        font-size: 18px !important;
+        letter-spacing: 5px;
+    }
+
+}
+

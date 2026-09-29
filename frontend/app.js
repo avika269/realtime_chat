@@ -139,6 +139,247 @@ function showRegister() {
     showMessage("")
 }
 
+function showForgotPassword() {
+
+    const loginForm =
+        document.getElementById("loginForm")
+
+    const registerForm =
+        document.getElementById("registerForm")
+
+    const forgotPasswordSection =
+        document.getElementById("forgotPasswordSection")
+
+    const authTabs =
+        document.querySelector(".auth-tabs")
+
+    const googleSignIn =
+        document.getElementById("googleSignIn")
+
+    const orDivider =
+        document.querySelector(".or-divider")
+
+    const collegeOnly =
+        document.querySelector(".college-only")
+
+    const loginEmail =
+        document.getElementById("loginEmail")
+
+    const forgotEmail =
+        document.getElementById("forgotEmail")
+
+    if (loginEmail && forgotEmail) {
+        forgotEmail.value = loginEmail.value
+    }
+
+    loginForm.classList.add("hidden")
+    registerForm.classList.add("hidden")
+    forgotPasswordSection.classList.remove("hidden")
+
+    if (authTabs) authTabs.classList.add("hidden")
+    if (googleSignIn) googleSignIn.classList.add("hidden")
+    if (orDivider) orDivider.classList.add("hidden")
+    if (collegeOnly) collegeOnly.classList.add("hidden")
+
+    document
+        .getElementById("otpSection")
+        .classList.add("hidden")
+
+    showMessage("")
+}
+
+
+function backToLogin() {
+
+    const loginForm =
+        document.getElementById("loginForm")
+
+    const registerForm =
+        document.getElementById("registerForm")
+
+    const forgotPasswordSection =
+        document.getElementById("forgotPasswordSection")
+
+    const authTabs =
+        document.querySelector(".auth-tabs")
+
+    const googleSignIn =
+        document.getElementById("googleSignIn")
+
+    const orDivider =
+        document.querySelector(".or-divider")
+
+    const collegeOnly =
+        document.querySelector(".college-only")
+
+    forgotPasswordSection.classList.add("hidden")
+    loginForm.classList.remove("hidden")
+    registerForm.classList.add("hidden")
+
+    if (authTabs) authTabs.classList.remove("hidden")
+    if (googleSignIn) googleSignIn.classList.remove("hidden")
+    if (orDivider) orDivider.classList.remove("hidden")
+    if (collegeOnly) collegeOnly.classList.remove("hidden")
+
+    showMessage("")
+}
+
+
+async function sendForgotPasswordOTP() {
+
+    const email =
+        document
+            .getElementById("forgotEmail")
+            .value
+            .trim()
+            .toLowerCase()
+
+    if (!email) {
+        showMessage("Please enter your college email.")
+        return
+    }
+
+    if (!validateCollegeEmail(email)) {
+        showMessage(
+            "Only @akgec.ac.in email addresses are allowed."
+        )
+        return
+    }
+
+    try {
+
+        showMessage("Sending OTP...")
+
+        await apiRequest(
+            "/auth/forgot-password",
+            {
+                method: "POST",
+                body: JSON.stringify({ email })
+            }
+        )
+
+        document
+            .getElementById("otpSection")
+            .classList.remove("hidden")
+
+        showMessage(
+            "OTP sent successfully. Check your email."
+        )
+
+    } catch (error) {
+
+        console.error(
+            "Forgot password error:",
+            error
+        )
+
+        showMessage(error.message)
+    }
+}
+
+
+async function resetForgotPassword() {
+
+    const email =
+        document
+            .getElementById("forgotEmail")
+            .value
+            .trim()
+            .toLowerCase()
+
+    const otp =
+        document
+            .getElementById("forgotOtp")
+            .value
+            .trim()
+
+    const newPassword =
+        document
+            .getElementById("forgotNewPassword")
+            .value
+
+    const confirmPassword =
+        document
+            .getElementById("forgotConfirmPassword")
+            .value
+
+    if (
+        !email ||
+        !otp ||
+        !newPassword ||
+        !confirmPassword
+    ) {
+        showMessage("Please fill all fields.")
+        return
+    }
+
+    if (!validateCollegeEmail(email)) {
+        showMessage(
+            "Only @akgec.ac.in email addresses are allowed."
+        )
+        return
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+        showMessage(
+            "OTP must contain exactly 6 digits."
+        )
+        return
+    }
+
+    if (newPassword.length < 6) {
+        showMessage(
+            "Password must contain at least 6 characters."
+        )
+        return
+    }
+
+    if (newPassword !== confirmPassword) {
+        showMessage("Passwords do not match.")
+        return
+    }
+
+    try {
+
+        showMessage("Resetting password...")
+
+        const data =
+            await apiRequest(
+                "/auth/reset-password",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email,
+                        otp,
+                        newPassword
+                    })
+                }
+            )
+
+        if (data.token) {
+            completeLogin(data)
+            return
+        }
+
+        document.getElementById("loginEmail").value = email
+
+        backToLogin()
+
+        showMessage(
+            "Password reset successfully. Please login."
+        )
+
+    } catch (error) {
+
+        console.error(
+            "Reset password error:",
+            error
+        )
+
+        showMessage(error.message)
+    }
+}
+
 
 function setupAuthTabs() {
 
@@ -1005,6 +1246,65 @@ document.addEventListener(
             )
 
         }
+
+        const forgotPasswordButton =
+    document.getElementById(
+        "forgotPasswordButton"
+    )
+
+if (forgotPasswordButton) {
+
+    forgotPasswordButton.addEventListener(
+        "click",
+        showForgotPassword
+    )
+
+}
+
+
+const sendOtpButton =
+    document.getElementById(
+        "sendOtpButton"
+    )
+
+if (sendOtpButton) {
+
+    sendOtpButton.addEventListener(
+        "click",
+        sendForgotPasswordOTP
+    )
+
+}
+
+
+const resetPasswordButton =
+    document.getElementById(
+        "resetPasswordButton"
+    )
+
+if (resetPasswordButton) {
+
+    resetPasswordButton.addEventListener(
+        "click",
+        resetForgotPassword
+    )
+
+}
+
+
+const backToLoginButton =
+    document.getElementById(
+        "backToLoginButton"
+    )
+
+if (backToLoginButton) {
+
+    backToLoginButton.addEventListener(
+        "click",
+        backToLogin
+    )
+
+}
 
         const logoutButton =
             document.getElementById(
