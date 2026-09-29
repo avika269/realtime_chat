@@ -1,24 +1,17 @@
-import fs from "fs"
-import path from "path"
 import multer from "multer"
+import { v2 as cloudinary } from "cloudinary"
 
-const uploadDir = path.join(process.cwd(), "uploads")
-
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir)
-    },
-    filename: (req, file, cb) => {
-        const name = Date.now() + "-" + file.originalname.replace(/\s+/g, "-")
-        cb(null, name)
-    }
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-export const upload = multer({ storage })
+const storage = multer.memoryStorage()
+
+export const upload = multer({
+    storage
+})
 
 export const uploadMedia = async (req, res) => {
     try {
@@ -28,12 +21,33 @@ export const uploadMedia = async (req, res) => {
             })
         }
 
+        const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "realtime_chat",
+                    resource_type: "auto"
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error)
+                    } else {
+                        resolve(result)
+                    }
+                }
+            )
+
+            stream.end(req.file.buffer)
+        })
+
         res.status(201).json({
             message: "Media uploaded successfully",
-            filename: req.file.filename,
-            url: `/uploads/${req.file.filename}`
+            url: result.secure_url,
+            public_id: result.public_id,
+            resource_type: result.resource_type
         })
     } catch (error) {
+        console.error("Cloudinary upload error:", error)
+
         res.status(500).json({
             message: error.message
         })
@@ -42,16 +56,28 @@ export const uploadMedia = async (req, res) => {
 
 export const deleteMedia = async (req, res) => {
     try {
-        const filePath = path.join(uploadDir, req.params.filename)
+        const { public_id, resource_type = "image" } = req.body
 
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
+        if (!public_id) {
+            return res.status(400).json({
+                message: "public_id is required"
+            })
         }
 
+        const result = await cloudinary.uploader.destroy(
+            public_id,
+            {
+                resource_type
+            }
+        )
+
         res.json({
-            message: "Media deleted successfully"
+            message: "Media deleted successfully",
+            result: result.result
         })
     } catch (error) {
+        console.error("Cloudinary delete error:", error)
+
         res.status(500).json({
             message: error.message
         })

@@ -2,12 +2,11 @@ import express from "express"
 
 import {
     uploadMedia,
-    deleteMedia
+    deleteMedia,
+    upload
 } from "../controllers/mediaController.js"
 
 import { authenticate } from "../middleware/auth.js"
-
-import upload from "../middleware/upload.js"
 
 const router = express.Router()
 
@@ -19,7 +18,7 @@ router.post(
 )
 
 router.delete(
-    "/:filename",
+    "/delete",
     authenticate,
     deleteMedia
 )
