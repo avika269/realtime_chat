@@ -3556,3 +3556,145 @@ textarea {
 
 }
 
+/* =========================================================
+   SOCIAL POST MEDIA
+   ========================================================= */
+
+.social-post-media {
+    width: 100%;
+    max-height: 650px;
+    margin-top: 14px;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-post-image {
+    display: block;
+
+    max-width: 100%;
+    max-height: 650px;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW BEFORE POSTING
+   ========================================================= */
+
+.post-image-preview {
+    position: relative;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.post-image-preview-media {
+    width: 100%;
+    max-height: 450px;
+
+    background: #000;
+
+    border-radius: 14px;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-image-preview-media img {
+    display: block;
+
+    max-width: 100%;
+    max-height: 450px;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+}
+
+
+/* =========================================================
+   REMOVE IMAGE BUTTON
+   ========================================================= */
+
+.remove-selected-image {
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    z-index: 5;
+}
+
+.remove-selected-image:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+
+/* =========================================================
+   POST DESCRIPTION
+   ========================================================= */
+
+.post-content {
+    margin-top: 12px;
+
+    font-size: 15px;
+    line-height: 1.55;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .social-post-media {
+        max-height: 520px;
+        border-radius: 10px;
+    }
+
+    .social-post-image {
+        max-height: 520px;
+    }
+
+    .post-image-preview-media {
+        max-height: 380px;
+        border-radius: 10px;
+    }
+
+    .post-image-preview-media img {
+        max-height: 380px;
+    }
+
+}

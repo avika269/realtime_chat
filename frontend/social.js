@@ -120,10 +120,15 @@ function setupImageSelection() {
 
                     <div class="post-image-preview">
 
+                    <div class="post-image-preview-media">
+
+
                         <img
                             src="${e.target.result}"
                             alt="Selected image"
                         >
+
+                          </div>
 
                         <button
                             type="button"
@@ -497,12 +502,15 @@ function renderPost(post) {
 
     const imageHTML =
         post.image
-            ? `
+            ? ` 
+             <div class="social-post-media">
                 <img
                     class="social-post-image"
                     src="${getImageUrl(post.image)}"
                     alt="Post image"
+                    loading="lazy"
                 >
+            </div>
             `
             : ""
 
