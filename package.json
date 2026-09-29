@@ -39,6 +39,7 @@
     "mongodb": "^6.20.0",
     "mongoose": "^8.24.4",
     "multer": "^2.4.0",
+    "nodemailer": "^10.0.12",
     "socket.io": "^4.8.3",
     "zod": "^4.6.5"
   },

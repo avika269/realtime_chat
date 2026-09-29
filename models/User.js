@@ -61,6 +61,16 @@ const userSchema = new mongoose.Schema(
             default: false
         },
 
+        resetOtpHash: {
+            type: String,
+            default: null
+        },
+
+        resetOtpExpiresAt: {
+            type: Date,
+            default: null
+        },
+
         followers: [
             {
                 type: mongoose.Schema.Types.ObjectId,
