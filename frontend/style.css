@@ -3349,3 +3349,70 @@ textarea {
         min-height: 500px;
     }
 }
+
+/* ================================
+   SOCIAL POST FONT FIX
+================================ */
+
+.social-post {
+    font-family: inherit;
+}
+
+.social-post * {
+    font-family: inherit;
+}
+
+.social-post-header {
+    font-family: inherit;
+}
+
+.post-user-info {
+    font-family: inherit;
+}
+
+.post-user-name {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.post-user-email {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.post-time {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.post-content {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.post-actions {
+    font-family: inherit;
+}
+
+.post-action {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.post-action span {
+    font-family: inherit;
+}
+
+.post-delete {
+    font-family: inherit;
+}
+
+.social-post-image {
+    font-family: inherit;
+}
